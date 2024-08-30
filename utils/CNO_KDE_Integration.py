@@ -2,12 +2,12 @@
 
 import time
 import sys
-import warnings
 import csv
 import cv2
 import math
+import matplotlib.pyplot as plt
 from pathlib import Path
-from utils.growcut import *
+from utils.Img_Preprocessing import *
 from ultralytics import YOLO
 from sklearn.neighbors import KernelDensity
 from sklearn.model_selection import GridSearchCV
@@ -19,13 +19,13 @@ np.set_printoptions(threshold=sys.maxsize)
 # torch.cuda.set_device(0) # Set to your desired GPU number
 
 # Model Path
-DETECTION_MODEL_n = os.path.join(DIR_NAME, 'models', 'YOLOv8-N_CNO_Detection.pt')
-DETECTION_MODEL_s = os.path.join(DIR_NAME, 'models', 'YOLOv8-S_CNO_Detection.pt')
-DETECTION_MODEL_m = os.path.join(DIR_NAME, 'models', 'YOLOv8-M_CNO_Detection.pt')
-DETECTION_MODEL_l = os.path.join(DIR_NAME, 'models', 'YOLOv8-L_CNO_Detection.pt')
-DETECTION_MODEL_x = os.path.join(DIR_NAME, 'models', 'YOLOv8-X_CNO_Detection.pt')
-# DETECTION_MODEL_c = os.path.join(DIR_NAME, 'models', 'YOLOv9-C_CNO_Detection.pt')
-# DETECTION_MODEL_e = os.path.join(DIR_NAME, 'models', 'YOLOv9-E_CNO_Detection.pt')
+DETECTION_MODEL_n = os.path.join(DIR_NAME, 'models', 'YOLOv8n.pt')
+DETECTION_MODEL_s = os.path.join(DIR_NAME, 'models', 'YOLOv8s.pt')
+DETECTION_MODEL_m = os.path.join(DIR_NAME, 'models', 'YOLOv8m.pt')
+DETECTION_MODEL_l = os.path.join(DIR_NAME, 'models', 'YOLOv8l.pt')
+DETECTION_MODEL_x = os.path.join(DIR_NAME, 'models', 'YOLOv8x.pt')
+# DETECTION_MODEL_c = os.path.join(DIR_NAME, 'models', 'YOLOv9c.pt')
+# DETECTION_MODEL_e = os.path.join(DIR_NAME, 'models', 'YOLOv9e.pt')
 
 def numcat(arr):
     arr_size = arr.shape[0]

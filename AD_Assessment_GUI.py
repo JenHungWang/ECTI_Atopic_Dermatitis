@@ -488,7 +488,7 @@ class App(customtkinter.CTk):
 
             t1 = threading.Thread(target=cno_detect(self.folder_dir, self.model, self.conf))
 
-            list_of_files = glob.glob(os.path.join(self.csv_path, '*.csv'))  # * means all if need specific format then *.csv
+            list_of_files = glob.glob(os.path.join(self.csv_path, '*.csv'))
             latest_file = max(list_of_files, key=os.path.getmtime)
             print("Read csv", latest_file)
             self.df = pandas.read_csv(latest_file)

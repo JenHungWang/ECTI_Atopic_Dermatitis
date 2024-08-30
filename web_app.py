@@ -1,3 +1,5 @@
+# Copyright 2024 Jen-Hung Wang, IDUN Section, Department of Health Technology, Technical University of Denmark (DTU)
+
 import os
 import cv2
 import pandas as pd
@@ -15,12 +17,9 @@ DETECTION_MODEL_m = os.path.join(DIR_NAME, 'models', 'YOLOv8-M_CNO_Detection.pt'
 DETECTION_MODEL_l = os.path.join(DIR_NAME, 'models', 'YOLOv8-L_CNO_Detection.pt')
 DETECTION_MODEL_x = os.path.join(DIR_NAME, 'models', 'YOLOv8-X_CNO_Detection.pt')
 
-# MODEL = os.path.join(DIR_NAME, 'models', 'YOLOv8-M_CNO_Detection.pt')
-# model = YOLO(MODEL)
-# cno_df = pd.DataFrame()
 
 def predict_image(name, model, img, conf_threshold, iou_threshold):
-    """Predicts and plots labeled objects in an image using YOLOv8 model with adjustable confidence and IOU thresholds."""
+    # Predicts and plots labeled objects in an image using YOLOv8 model with adjustable confidence and IOU thresholds.
     gr.Info("Starting process")
     # gr.Warning("Name is empty")
     if name == "":
@@ -78,35 +77,6 @@ def predict_image(name, model, img, conf_threshold, iou_threshold):
         cno_count.append(cno)
         file_name.append(file_label)
 
-    """
-    for r in results:
-        CNO = len(r.boxes)
-        CNO_coor = np.empty([CNO, 2], dtype=int)
-        for j in range(CNO):
-            # w = r.boxes.xywh[j][2]
-            # h = r.boxes.xywh[j][3]
-            # area = (math.pi * w * h / 4) * 20 * 20 / (512 * 512)
-            # total_area += area
-            # bbox_img = r.orig_img
-            x = round(r.boxes.xywh[j][0].item())
-            y = round(r.boxes.xywh[j][1].item())
-
-            x1 = round(r.boxes.xyxy[j][0].item())
-            y1 = round(r.boxes.xyxy[j][1].item())
-            x2 = round(r.boxes.xyxy[j][2].item())
-            y2 = round(r.boxes.xyxy[j][3].item())
-
-            CNO_coor[j] = [x, y]
-            cv2.rectangle(r.orig_img, (x1, y1), (x2, y2), (0, 255, 0), 1)
-        im_array = r.orig_img
-        im = Image.fromarray(im_array[..., ::-1])
-
-    CNO_count = "CNO Count: " + str(CNO)
-    
-    test = []
-    for i in range(len(cno_image)):
-        test.append([cno_image[0], f"label {i}"])
-    """
     data = {
         "Files": file_name,
         "CNO Count": cno_count,
@@ -187,24 +157,7 @@ with gr.Blocks(title="AFM AI Analysis", theme="default") as app:
     cno_gallery.select(highlight_df, inputs=analysis_results, outputs=[test_label, analysis_results])
 
 
-"""
-iface = gr.Interface(
-    fn=predict_image,
-    inputs=[
-        gr.Textbox(label="User Name"),
-        gr.Radio(["YOLOv8-N", "YOLOv8-S", "YOLOv8-M", "YOLOv8-L", "YOLOv8-X"], value="YOLOv8-M"),
-        # gr.Image(type="filepath", label="Upload Image"),
-        gr.File(file_types=["image"], file_count="multiple", label="Upload Image"),
-        gr.Slider(minimum=0, maximum=1, value=0.2, label="Confidence threshold"),
-        gr.Slider(minimum=0, maximum=1, value=0.5, label="IoU threshold")
-    ],
-    outputs=[gr.Label(label="Analysis Results"), gr.Image(type="pil", label="Result")],
-    title="AFM AI Analysis",
-    description="Upload images for inference. The YOLOv8-M model is used by default.",
-    theme=gr.themes.Default()
-)
-"""
-
 if __name__ == '__main__':
     # iface.launch()
     app.launch()
+

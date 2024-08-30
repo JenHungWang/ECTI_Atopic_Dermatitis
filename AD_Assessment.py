@@ -17,9 +17,10 @@ from config.global_settings import import_config_dict
 # Import config files
 config_dict = import_config_dict()
 
-# Read source folder path and detection model
-PATH = config_dict['PATH']['source']
+# Import source folder path and detection model
+DATA_PATH = config_dict['PATH']['source']
 MODEL = config_dict['MODEL']['model']
+MODEL_PATH = config_dict['MODEL']['folder_path']
 CONF = config_dict['MODEL']['conf_threshold']
 DIR_NAME = Path(os.path.dirname(__file__))
 warnings.filterwarnings('ignore')
@@ -27,14 +28,8 @@ np.set_printoptions(threshold=sys.maxsize)
 # Use GPU
 # torch.cuda.set_device(0) # Set to your desired GPU number
 
-# Model Path
-YOLOv8_N = os.path.join(DIR_NAME, 'models', 'YOLOv8n.pt')
-YOLOv8_S = os.path.join(DIR_NAME, 'models', 'YOLOv8s.pt')
-YOLOv8_M = os.path.join(DIR_NAME, 'models', 'YOLOv8m.pt')
-YOLOv8_L = os.path.join(DIR_NAME, 'models', 'YOLOv8l.pt')
-YOLOv8_X = os.path.join(DIR_NAME, 'models', 'yolov8x.pt')
-YOLOv9_C = os.path.join(DIR_NAME, 'models', 'YOLOv9c.pt')
-YOLOv9_E = os.path.join(DIR_NAME, 'models', 'YOLOv9e.pt')
+# Model path
+DETECTION_MODEL = os.path.join(MODEL_PATH, MODEL)
 
 
 # The numcat function concatenates two integers in each row of the input 2D array
@@ -179,20 +174,8 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
 
 def main(folder_dir, model, conf):
 
-    if model == 'YOLOv8-N':
-        cno_model = YOLO(YOLOv8_N)
-    elif model == 'YOLOv8-S':
-        cno_model = YOLO(YOLOv8_S)
-    elif model == 'YOLOv8-M':
-        cno_model = YOLO(YOLOv8_M)
-    elif model == 'YOLOv8-L':
-        cno_model = YOLO(YOLOv8_L)
-    elif model == 'YOLOv8-X':
-        cno_model = YOLO(YOLOv8_X)
-    elif model == 'YOLOv9-C':
-        cno_model = YOLO(YOLOv9_C)
-    else:
-        cno_model = YOLO(YOLOv9_E)
+
+    cno_model = YOLO(str(DETECTION_MODEL))
 
     # Search folder path
     folder_list = []
@@ -307,5 +290,5 @@ def main(folder_dir, model, conf):
 
 
 if __name__ == "__main__":
-    main(PATH, MODEL, CONF)
+    main(DATA_PATH, MODEL, CONF)
 

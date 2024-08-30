@@ -181,9 +181,6 @@ def present(im, land, b):
 
 def treat_one_image(fn, growcut_path, original_png_path, enhanced_png_path):
 
-    file_list = []
-    growcut_list = []
-
     # load data
     im = load_im(fn)
 

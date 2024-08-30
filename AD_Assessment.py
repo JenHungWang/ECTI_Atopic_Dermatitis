@@ -23,8 +23,8 @@ MODEL = config_dict['MODEL']['model']
 MODEL_PATH = config_dict['MODEL']['folder_path']
 CONF = config_dict['MODEL']['conf_threshold']
 DIR_NAME = Path(os.path.dirname(__file__))
-warnings.filterwarnings('ignore')
-np.set_printoptions(threshold=sys.maxsize)
+warnings.filterwarnings('ignore')  # Suppress warnings
+np.set_printoptions(threshold=sys.maxsize)  # Print full numpy arrays
 # Use GPU
 # torch.cuda.set_device(0) # Set to your desired GPU number
 
@@ -41,9 +41,10 @@ def numcat(arr):
     return arr_cat
 
 
+# Perform CNO (Circular Nano-size Object) detection and density analysis using KDE
 def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
 
-    # Declare Parameters
+    # Declare parameters
     cno_col = []
     total_layer_area = []
     total_layer_cno = []
@@ -53,7 +54,7 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
 
     detection_results = cno_model.predict(source, save=False, save_txt=False, iou=0.5, conf=conf, max_det=1200)
 
-    # CNO Analysis
+    # CNO detection
     for idx, result in enumerate(detection_results):
         cno = len(result.boxes)
         single_layer_area = []
@@ -71,9 +72,9 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
         else:
             cno_coor = np.empty([cno, 2], dtype=int)
             for j in range(cno):
-                w = result.boxes.xywh[j][2]
-                h = result.boxes.xywh[j][3]
-                area = (math.pi * w * h / 4) * 20 * 20 / (512 * 512)
+                w = result.boxes.xywh[j][2]  # Width of bounding box
+                h = result.boxes.xywh[j][3]  # Height of bounding box
+                area = (math.pi * w * h / 4) * 20 * 20 / (512 * 512)  # Area calculation
                 total_area += area
                 bbox_img = result.orig_img
                 x = round(result.boxes.xywh[j][0].item())
@@ -90,16 +91,17 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
                                          (x2, y2),
                                          (0, 255, 0), 1)
 
-            avg_area = total_area / cno
+            avg_area = total_area / cno  # Calculate average area
             avg_area_col.append(round(avg_area.item(), 4))
             total_area_col.append(round(total_area.item(), 4))
 
+            # Save bounding box image
             cv2.imwrite(os.path.join(kde_dir, '{}_{}_{}_bbox.png'.format(file_list[idx], model_type, conf)),
                         bbox_img)
 
             kde = KernelDensity(metric='euclidean', kernel='gaussian', algorithm='ball_tree')
 
-            # Finding Optimal Bandwidth
+            # Finding optimal bandwidth
             ti = time.time()
             if cno < 7:
                 fold = cno
@@ -121,7 +123,7 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
             gdim = xv.shape
             zi = np.arange(xys.shape[0])
             zXY = xys
-            z = np.exp(kde.score_samples(zXY))
+            z = np.exp(kde.score_samples(zXY))  # KDE score samples
             zg = -9999 + np.zeros(xys.shape[0])
             zg[zi] = z
 
@@ -136,7 +138,7 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
                 area = np.argwhere(z >= levels[j])
                 area_concatenate = numcat(area)
                 cno_concatenate = numcat(cno_coor)
-                ecno = np.count_nonzero(np.isin(area_concatenate, cno_concatenate))
+                ecno = np.count_nonzero(np.isin(area_concatenate, cno_concatenate))  # Count within area
                 layer_area = area.shape[0]
                 if layer_area == 0:
                     density = np.round(0.0, 4)
@@ -151,7 +153,7 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
             total_layer_cno.append(single_layer_cno)
             total_layer_density.append(single_layer_density)
 
-            # Plot CNO Distribution
+            # Plot CNO distribution
             plt.contourf(x, y, z, levels=levels, cmap=plt.cm.bone)
             plt.axis('off')
             plt.gcf().set_size_inches(8, 8)
@@ -173,7 +175,6 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
 
 
 def main(folder_dir, model, conf):
-
 
     cno_model = YOLO(str(DETECTION_MODEL))
 
@@ -242,7 +243,7 @@ def main(folder_dir, model, conf):
         encyc.sort()
         print("files: ", encyc)
 
-        # Image Preprocessing
+        # Image preprocessing
         if run_preprocessing:
             for i, fn in enumerate(encyc):
                 file = treat_one_image(fn, original_png_path, enhanced_png_path)
@@ -252,7 +253,6 @@ def main(folder_dir, model, conf):
             for i, fn in enumerate(encyc):
                 file_list.append(os.path.split(fn)[1][0:-10])
 
-        # CNO Detection & AD Classification
         print("Model", model)
         print("Conf", conf)
 

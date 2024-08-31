@@ -12,7 +12,6 @@ This repository presents an automated approach for the data processing of Atomic
 - scipy
 - scikit-image
 - ultralytics
-- customtkinter
 - scikit-learn
 - customtkinter
 

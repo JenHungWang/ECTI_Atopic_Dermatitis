@@ -4,6 +4,7 @@ import os
 import re
 import numpy as np
 import warnings
+import matplotlib.pyplot as plt
 from scipy import ndimage
 from matplotlib import cm
 from PIL import Image
@@ -28,6 +29,7 @@ def load_im(fn):
 
     im = (im.T - np.mean(im, axis=1) +
           np.mean(ndimage.gaussian_filter(im, 10), axis=1)).T  # Reduce horizontal artifacts
+
     im = im - np.min(im)
     im = im / np.max(im)  # normalize to 0.0-1.0
     return im
@@ -36,15 +38,17 @@ def load_im(fn):
 # Apply pyramid contrast enhancement to an image
 def pyramid_contrast(im):
     oom = []
-    ms = []
-    for d in (9, 15):  # Different disk sizes for contrast enhancement
+    # Different disk sizes for contrast enhancement
+    for d in (9, 15): # (9, 11, 13, 15, 17,25): #(3, 6, 9, 12, 15, 18, 21):
         disk = morphology.disk(d)
         m = ndimage.percentile_filter(im, 10, footprint=disk)
         M = ndimage.percentile_filter(im, 90, footprint=disk)
         om = (im - m) / (M - m)
         om = np.nan_to_num(om).clip(0, 1)
+        plt.imshow(om)
+        plt.show()
         oom.append(om)
-        ms.append(M - m)
+
     oom = np.array(oom)
     land = np.mean(oom, axis=0)
     return land

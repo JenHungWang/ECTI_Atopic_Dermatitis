@@ -17,8 +17,7 @@ This repository presents an objective, quantifiable method for assessing atopic 
 
 ## **Directories**
 - `AD_Assessment_GUI.zip` contains a cross-platform executable GUI, sample data, and a tutorial video.
-- Folder `corneocyte dataset` contains original corneocyte nanotexture images and annotated images for training AI models.
-- Folder `models` contains our fine-tuned YOLOv10-{N,S,M,B,L,X} and RT-DETRv2-{S,M,L,X} models.
+- `utils/Img_Preprocessing.py` demonstrates the image enhancement algorithms applied to the corneocyte nanotexture images.
 
 ## **Usage**
 1. Execution via cross-platform executable GUI
@@ -62,6 +61,9 @@ This repository presents an objective, quantifiable method for assessing atopic 
 | [RT-DETRv2-M](https://huggingface.co/jenhung/CNO_DETECTION_YOLOv8-L) |    512    |      31.0      |   100.0   |        84.0         |          37.2          |     7.48     |
 | [RT-DETRv2-L](https://huggingface.co/jenhung/CNO_DETECTION_YOLOv8-L) |    512    |      42.0      |   136.0   |        84.3         |          33.4          |    13.50     |
 | [RT-DETRv2-X](https://huggingface.co/jenhung/CNO_DETECTION_YOLOv8-L) |    512    |      76.0      |   259.0   |        83.3         |          32.0          |    21.15     |
+
+## **Dataset**
+The corneocyte nanotexture dataset is available for download at the following link: [Corneocyte Nanotexture Dataset](https://huggingface.co/datasets/jenhung/Corneocyte_Nanotexture_Dataset).
 
 ## **Contributions**
 

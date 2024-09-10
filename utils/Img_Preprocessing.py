@@ -45,8 +45,8 @@ def pyramid_contrast(im):
         M = ndimage.percentile_filter(im, 90, footprint=disk)
         om = (im - m) / (M - m)
         om = np.nan_to_num(om).clip(0, 1)
-        plt.imshow(om)
-        plt.show()
+        # plt.imshow(om)
+        # plt.show()
         oom.append(om)
 
     oom = np.array(oom)

@@ -2,7 +2,7 @@
 
 <img src="./source/Overview.png" alt="Data Processing" width="95%" />
 
-This repository presents an automated approach for the data processing of Atomic Force Microscopy (AFM), enabling the construction of an extensive database for further academic investigation and visualization. The program seamlessly integrates critical steps, including the conversion of raw AFM data into PNG files, the utilization of computer vision techniques, and the implementation of state-of-the-art deep learning algorithms for accurate detection of circular nano objects (CNOs) and classification of various skin diseases. In addition, the algorithm incorporates the grid search method to determine the optimal hyperparameter settings, ensuring optimal performance and enhancing the reliability of the results.
+This repository presents an objective, quantifiable method for assessing atopic dermatitis (AD) severity. The program integrates deep learning object detection with spatial analysis algorithms to accurately calculate the density of circular nano-size objects (CNOs), termed the Effective Corneocyte Topographical Index (ECTI). The ECTI demonstrates remarkable robustness in overcoming the inherent challenges of nano-imaging, such as environmental noise and structural occlusions on the corneocyte surface, further enhancing its applicability in clinical settings.
 
 ## **Dependencies**
 - Python 3.9+

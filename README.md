@@ -22,7 +22,7 @@ This repository presents an automated approach for the data processing of Atomic
 
 ## **Usage**
 1. Execution via cross-platform executable GUI
-    - Download [AD_Assessment_GUI.zip](https://huggingface.co/jenhung/CNO_DETECTION_YOLOv8-L)
+    - Download [AD_Assessment_GUI.zip](https://huggingface.co/jenhung/ECTI_Assessment_GUI)
     - Run `AD_Assessment_GUI.exe`
     - Analysis results will be saved within the selected path in a folder titled `CNO_Detection`
 

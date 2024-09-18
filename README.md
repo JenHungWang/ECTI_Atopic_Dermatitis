@@ -67,7 +67,7 @@ The corneocyte nanotexture dataset is available for download at the following li
 
 ## **Contributions**
 
-[1] Wang, J-H., Pereda, J., Du, C-W., Chu, C-Y., Christensen, M. O., Kezic S., Jakasa I., Thyssen J. P., Satheesh S., Hwu, E. E-T. (2024). .Stratum corneum nanotexture feature detection using deep learning and spatial analysis: a non-invasive tool for skin barrier assessment. *GigaScience* [In Revision, Submitted on 27. March 2024]
+[1] Wang, J-H., Pereda, J., Du, C-W., Chu, C-Y., Christensen, M. O., Kezic S., Jakasa I., Thyssen J. P., Satheesh S., Hwu, E. E-T. (2024). Stratum corneum nanotexture feature detection using deep learning and spatial analysis: a non-invasive tool for skin barrier assessment. *GigaScience* [In Revision, Submitted on 27. March 2024]
 
 [3] de Boer, F. L., van der Molen, H. F., Wang, J-H., Raun, E., Pereda, J., Hwu, EE. -T., Jakasa, I., Dubrac, S., Rustemeyer, T., & Kezic, S. (2024). Skin Barrier and Immune Response related Biomarkers of Solar UVR Exposure comparing Indoor and Outdoor Workers. *JID Innovations*, Article 100280. https://doi.org/10.1016/j.xjidi.2024.100280
 

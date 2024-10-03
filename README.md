@@ -2,7 +2,7 @@
 
 <img src="./source/Overview.png" alt="Data Processing" width="95%" />
 
-This repository presents an automated approach for the data processing of Atomic Force Microscopy (AFM), enabling the construction of an extensive database for further academic investigation and visualization. The program seamlessly integrates critical steps, including the conversion of raw AFM data into PNG files, the utilization of computer vision techniques, and the implementation of state-of-the-art deep learning object detectors for accurate quantification of circular nano objects (CNOs) and classification of various skin diseases. In addition, the algorithm incorporates the grid search method to determine the optimal hyperparameter settings, ensuring optimal performance and enhancing the reliability of the results.
+This repository presents an automated approach for the data processing of Atomic Force Microscopy (AFM), enabling the construction of an extensive database for further academic investigation and visualization. The program seamlessly integrates critical steps, including the conversion of raw AFM data into PNG files, the utilization of computer vision techniques, and the implementation of state-of-the-art deep learning algorithms for accurate detection of circular nano objects (CNOs) and classification of various skin diseases. In addition, the algorithm incorporates the grid search method to determine the optimal hyperparameter settings, ensuring optimal performance and enhancing the reliability of the results.
 
 ## **Dependencies**
 - Python 3.9+
@@ -35,7 +35,7 @@ This repository presents an automated approach for the data processing of Atomic
     - Run `AD_Assessment_GUI.py`
     - Analysis results will be saved within the selected path in a folder titled `CNO_Detection`
 
-## **Export Executable**
+## **Executable**
 
 1. Install PyInstaller in terminal:
                 
@@ -49,9 +49,9 @@ This repository presents an automated approach for the data processing of Atomic
     pyinstaller --onedir .\AD_Assessment_GUI.py
     ```
    
-## **Model Performance**
+## **Performance**
 
-| Model                                                                | Test Size | #Parameter (M) | FLOPs (G) | AP<sub>50</sub> (%) | AP<sub>50-95</sub> (%) | Latency (ms) |
+| Model                                                                | Test Size | #Parameter (M) | FLOPs (G) | AP<sup>50</sup> (%) | AP<sup>50-95</sup> (%) | Latency (ms) |
 |:---------------------------------------------------------------------|:---------:|:--------------:|:---------:|:-------------------:|:----------------------:|:------------:|
 | [YOLOv10-N](https://huggingface.co/jenhung/CNO_DETECTION_YOLOv8-L)   |    512    |      2.7       |    8.2    |        89.6         |          51.4          |     3.3      |
 | [YOLOv10-S](https://huggingface.co/jenhung/CNO_DETECTION_YOLOv8-L)   |    512    |      8.0       |   24.4    |        90.8         |          55.5          |     4.58     |

@@ -127,18 +127,24 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
             print("levels", levels)
 
             for j in range(len(levels) - 1):
-                area = np.argwhere(z >= levels[j])
-                area_concatenate = numcat(area)
-                CNO_concatenate = numcat(CNO_coor)
-                ecno = np.count_nonzero(np.isin(area_concatenate, CNO_concatenate))
-                layer_area = area.shape[0]
-                if layer_area == 0:
-                    density = np.round(0.0, 4)
+                # Identify the grid points in this layer
+                layer_mask = (z >= levels[j])
+                layer_area = np.sum(layer_mask)  # Number of grid points in this layer
+
+                # Sum the KDE values in this layer
+                layer_kde_sum = np.sum(z[layer_mask])
+
+                # Calculate the real density in this layer
+                if layer_area > 0:
+                    density = np.round(
+                        ((layer_kde_sum / np.sum(z)) * CNO_coor.shape[0] / layer_area) * 512 * 512 / 400, 4)
+                    layer_cno = np.round(layer_kde_sum / np.sum(z) * CNO_coor.shape[0], 2)
                 else:
-                    density = np.round((ecno / layer_area) * 512 * 512 / 400, 4)
-                print("Level {}: Area={}, CNO={}, density={}".format(j, layer_area, ecno, density))
+                    density = 0.0
+                    layer_cno = 0.0
+                print("Level {}: Area={}, CNO={}, density={}".format(j, layer_area, layer_cno, density))
                 single_layer_area.append(layer_area)
-                single_layer_cno.append(ecno)
+                single_layer_cno.append(layer_cno)
                 single_layer_density.append(density)
 
             total_layer_area.append(single_layer_area)

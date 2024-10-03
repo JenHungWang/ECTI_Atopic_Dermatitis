@@ -130,17 +130,17 @@ class App(customtkinter.CTk):
         self.model_frame_afm.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="new")
         self.model_frame_afm.grid_columnconfigure((0, 1, 2, 3), weight=1)  # configure grid of individual tabs
 
-        model_var = customtkinter.StringVar(value="YOLOv8-X")  # set initial value
+        model_var = customtkinter.StringVar(value="YOLOv10-L")  # set initial value
         conf_var = customtkinter.StringVar(value="0.2")  # set initial value
-        self.model = "YOLOv8-X"
+        self.model = "YOLOv10-L"
         self.conf = 0.2
 
         self.model_label = customtkinter.CTkLabel(master=self.model_frame_afm, text="Model:")
         self.model_label.grid(row=0, column=0, padx=0, pady=0, sticky="new")
         self.model_optionmenu = customtkinter.CTkOptionMenu(self.model_frame_afm, button_color="orange3",
                                                             fg_color="orange", button_hover_color="DarkOrange3",
-                                                            values=["YOLOv8-N", "YOLOv8-S", "YOLOv8-M", "YOLOv8-L",
-                                                                    "YOLOv8-X"],
+                                                            values=["YOLOv10-N", "YOLOv10-S", "YOLOv10-M", "YOLOv10-B",
+                                                                    "YOLOv10-L", "YOLOv10-X"],
                                                             variable=model_var, command=self.model_optionmenu_callback)
         self.model_optionmenu.grid(row=0, column=1, padx=0, pady=0, sticky="nw")
 
@@ -180,8 +180,8 @@ class App(customtkinter.CTk):
         self.model_label.grid(row=0, column=0, padx=0, pady=0, sticky="new")
         self.model_optionmenu = customtkinter.CTkOptionMenu(self.model_frame_cno, button_color="orange3",
                                                             fg_color="orange", button_hover_color="DarkOrange3",
-                                                            values=["YOLOv8-N", "YOLOv8-S", "YOLOv8-M", "YOLOv8-L",
-                                                                    "YOLOv8-X"],
+                                                            values=["YOLOv10-N", "YOLOv10-S", "YOLOv10-M", "YOLOv10-B",
+                                                                    "YOLOv10-L", "YOLOv10-X"],
                                                             variable=model_var, command=self.model_optionmenu_callback)
         self.model_optionmenu.grid(row=0, column=1, padx=0, pady=0, sticky="nw")
 
@@ -221,8 +221,8 @@ class App(customtkinter.CTk):
         self.model_label.grid(row=0, column=0, padx=0, pady=0, sticky="new")
         self.model_optionmenu = customtkinter.CTkOptionMenu(self.model_frame_kde, button_color="orange3",
                                                             fg_color="orange", button_hover_color="DarkOrange3",
-                                                            values=["YOLOv8-N", "YOLOv8-S", "YOLOv8-M", "YOLOv8-L",
-                                                                    "YOLOv8-X"],
+                                                            values=["YOLOv10-N", "YOLOv10-S", "YOLOv10-M", "YOLOv10-B",
+                                                                    "YOLOv10-L", "YOLOv10-X"],
                                                             variable=model_var, command=self.model_optionmenu_callback)
         self.model_optionmenu.grid(row=0, column=1, padx=0, pady=0, sticky="nw")
 
@@ -584,6 +584,11 @@ class App(customtkinter.CTk):
                                   self.df['Layer_Density_17'][image_view] +
                                   self.df['Layer_Density_18'][image_view]) / 3.0, 4)
 
+        if self.con_count <= 59:
+            color = "red"
+        else:
+            color = "green"
+
         self.afm_img_result.grid_forget()
         self.afm_image = customtkinter.CTkImage(
             light_image=Image.open(os.path.join(self.afm_path, self.afm_files[image_view])),
@@ -593,7 +598,8 @@ class App(customtkinter.CTk):
         self.result_label_afm = customtkinter.CTkLabel(self.button_frame_afm,
                                                        text="CNO Count: {} | KDE Density: {}".format(
                                                             self.con_count + 1, self.kde_density),
-                                                       font=customtkinter.CTkFont(size=16, weight="bold"))
+                                                       font=customtkinter.CTkFont(size=16, weight="bold"),
+                                                       text_color=color)
         self.result_label_afm.grid(row=0, column=0, padx=0, pady=(0, 20), sticky="new", columnspan=3)
         self.image_label_afm = customtkinter.CTkLabel(self.button_frame_afm,
                                                       text="{} / {}".format(image_view + 1, self.image_num))
@@ -608,7 +614,8 @@ class App(customtkinter.CTk):
         self.result_label_cno = customtkinter.CTkLabel(self.button_frame_cno,
                                                        text="CNO Count: {} | KDE Density: {}".format(
                                                            self.con_count + 1, self.kde_density),
-                                                       font=customtkinter.CTkFont(size=16, weight="bold"))
+                                                       font=customtkinter.CTkFont(size=16, weight="bold"),
+                                                       text_color=color)
         self.result_label_cno.grid(row=0, column=0, padx=0, pady=(0, 20), sticky="new", columnspan=3)
         self.image_label_cno = customtkinter.CTkLabel(self.button_frame_cno,
                                                       text="{} / {}".format(image_view + 1, self.image_num))
@@ -623,7 +630,8 @@ class App(customtkinter.CTk):
         self.result_label_kde = customtkinter.CTkLabel(self.button_frame_kde,
                                                        text="CNO Count: {} | KDE Density: {}".format(
                                                            self.con_count + 1, self.kde_density),
-                                                       font=customtkinter.CTkFont(size=16, weight="bold"))
+                                                       font=customtkinter.CTkFont(size=16, weight="bold"),
+                                                       text_color=color)
         self.result_label_kde.grid(row=0, column=0, padx=0, pady=(0, 20), sticky="new", columnspan=3)
         self.image_label_kde = customtkinter.CTkLabel(self.button_frame_kde,
                                                       text="{} / {}".format(image_view + 1, self.image_num))

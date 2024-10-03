@@ -19,13 +19,12 @@ np.set_printoptions(threshold=sys.maxsize)
 # torch.cuda.set_device(0) # Set to your desired GPU number
 
 # Model Path
-DETECTION_MODEL_n = os.path.join(DIR_NAME, 'models', 'YOLOv8n.pt')
-DETECTION_MODEL_s = os.path.join(DIR_NAME, 'models', 'YOLOv8s.pt')
-DETECTION_MODEL_m = os.path.join(DIR_NAME, 'models', 'YOLOv8m.pt')
-DETECTION_MODEL_l = os.path.join(DIR_NAME, 'models', 'YOLOv8l.pt')
-DETECTION_MODEL_x = os.path.join(DIR_NAME, 'models', 'YOLOv8x.pt')
-# DETECTION_MODEL_c = os.path.join(DIR_NAME, 'models', 'YOLOv9c.pt')
-# DETECTION_MODEL_e = os.path.join(DIR_NAME, 'models', 'YOLOv9e.pt')
+DETECTION_MODEL_n = os.path.join(DIR_NAME, 'models', 'YOLOv10n.pt')
+DETECTION_MODEL_s = os.path.join(DIR_NAME, 'models', 'YOLOv10s.pt')
+DETECTION_MODEL_m = os.path.join(DIR_NAME, 'models', 'YOLOv10m.pt')
+DETECTION_MODEL_b = os.path.join(DIR_NAME, 'models', 'YOLOv10b.pt')
+DETECTION_MODEL_l = os.path.join(DIR_NAME, 'models', 'YOLOv10l.pt')
+DETECTION_MODEL_x = os.path.join(DIR_NAME, 'models', 'YOLOv10x.pt')
 
 def numcat(arr):
     arr_size = arr.shape[0]
@@ -174,22 +173,18 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
 
 def cno_detect(folder_dir, model, conf):
 
-    if model == 'YOLOv8-N':
+    if model == 'YOLOv10-N':
         CNO_model = YOLO(DETECTION_MODEL_n)
-    elif model == 'YOLOv8-S':
+    elif model == 'YOLOv10-S':
         CNO_model = YOLO(DETECTION_MODEL_s)
-    elif model == 'YOLOv8-M':
+    elif model == 'YOLOv10-M':
         CNO_model = YOLO(DETECTION_MODEL_m)
-    elif model == 'YOLOv8-L':
+    elif model == 'YOLOv10-B':
+        CNO_model = YOLO(DETECTION_MODEL_b)
+    elif model == 'YOLOv10-L':
         CNO_model = YOLO(DETECTION_MODEL_l)
     else:
         CNO_model = YOLO(DETECTION_MODEL_x)
-    """  
-    elif model == 'YOLOv9-C':
-        CNO_model = YOLO(DETECTION_MODEL_c)
-    else:
-        CNO_model = YOLO(DETECTION_MODEL_e)
-    """
 
     # Search folder path
     folder = folder_dir.split(os.sep)[-1]
@@ -215,7 +210,7 @@ def cno_detect(folder_dir, model, conf):
         Number = None
         AD_group = None
 
-    run_growcut = True
+    run_preprocessing = True
     timestr = time.strftime("%Y%m%d-%H%M%S")
 
     CNO_list = []
@@ -223,9 +218,7 @@ def cno_detect(folder_dir, model, conf):
     Area_avg = []
 
     file_list = []
-    growcut_list = []
 
-    growcut_path = os.path.join(folder_dir, "CNO_Detection", "GrowCut")
     original_png_path = os.path.join(folder_dir, "CNO_Detection", "Image", "Original")
     enhanced_png_path = os.path.join(folder_dir, "CNO_Detection", "Image", "Enhanced")
     kde_png_path = os.path.join(folder_dir, "CNO_Detection", "Image", "KDE")
@@ -233,16 +226,15 @@ def cno_detect(folder_dir, model, conf):
     print("Save Path:", save_dir)
 
     try:
-        os.makedirs(growcut_path, exist_ok=True)
         os.makedirs(original_png_path, exist_ok=True)
         os.makedirs(enhanced_png_path, exist_ok=True)
         os.makedirs(kde_png_path, exist_ok=True)
         if not os.listdir(enhanced_png_path):
             print("Directory is empty")
-            run_growcut = True
+            run_preprocessing = True
         else:
             print("Directory is not empty")
-            run_growcut = False
+            run_preprocessing = False
         os.makedirs(save_dir, exist_ok=True)
     except OSError as error:
         print("Directory can not be created")
@@ -256,12 +248,10 @@ def cno_detect(folder_dir, model, conf):
                 encyc.append(d + os.sep + fn)
     encyc.sort()
 
-    # GrowCut Detection
-    if run_growcut:
+    if run_preprocessing:
         for i, fn in enumerate(encyc):
-            file, gc_CNO = treat_one_image(fn, growcut_path, original_png_path, enhanced_png_path)
+            file = treat_one_image(fn, original_png_path, enhanced_png_path)
             file_list.append(file)
-            growcut_list.append(gc_CNO)
             print(i, end=' ')
     else:
         for i, fn in enumerate(encyc):

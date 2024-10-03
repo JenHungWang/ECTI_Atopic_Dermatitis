@@ -53,16 +53,16 @@ This repository presents an automated approach for the data processing of Atomic
 
 | Model                                                                | Test Size | #Parameter (M) | FLOPs (G) | AP<sup>50</sup> (%) | AP<sup>50-95</sup> (%) | Latency (ms) |
 |:---------------------------------------------------------------------|:---------:|:--------------:|:---------:|:-------------------:|:----------------------:|:------------:|
-| [YOLOv10-N](https://huggingface.co/jenhung/CNO_DETECTION_YOLOv8-L)   |    512    |      2.7       |    8.2    |        89.6         |          51.4          |     3.3      |
-| [YOLOv10-S](https://huggingface.co/jenhung/CNO_DETECTION_YOLOv8-L)   |    512    |      8.0       |   24.4    |        90.8         |          55.5          |     4.58     |
-| [YOLOv10-M](https://huggingface.co/jenhung/CNO_DETECTION_YOLOv8-L)   |    512    |      16.5      |   63.4    |        91.3         |          59.7          |     7.17     |
-| [YOLOv10-B](https://huggingface.co/jenhung/CNO_DETECTION_YOLOv8-L)   |    512    |      20.4      |   97.7    |        91.1         |          62.5          |     7.58     |
-| [YOLOv10-L](https://huggingface.co/jenhung/CNO_DETECTION_YOLOv8-L)   |    512    |      25.7      |   126.3   |        91.4         |          63.2          |     9.01     |
-| [YOLOv10-X](https://huggingface.co/jenhung/CNO_DETECTION_YOLOv8-L)   |    512    |      31.6      |   169.8   |        91.2         |          62.9          |    10.95     |
-| [RT-DETRv2-S](https://huggingface.co/jenhung/CNO_DETECTION_YOLOv8-L) |    512    |      20.0      |   60.0    |        87.6         |          39.6          |     5.51     |
-| [RT-DETRv2-M](https://huggingface.co/jenhung/CNO_DETECTION_YOLOv8-L) |    512    |      31.0      |   100.0   |        84.0         |          37.2          |     7.48     |
-| [RT-DETRv2-L](https://huggingface.co/jenhung/CNO_DETECTION_YOLOv8-L) |    512    |      42.0      |   136.0   |        84.3         |          33.4          |    13.50     |
-| [RT-DETRv2-X](https://huggingface.co/jenhung/CNO_DETECTION_YOLOv8-L) |    512    |      76.0      |   259.0   |        83.3         |          32.0          |    21.15     |
+| [YOLOv10-N](https://huggingface.co/jenhung/CNO_Detection_YOLOv10-N)   |    512    |      2.7       |    8.2    |        89.6         |          51.4          |     3.3      |
+| [YOLOv10-S](https://huggingface.co/jenhung/CNO_Detection_YOLOv10-S)   |    512    |      8.0       |   24.4    |        90.8         |          55.5          |     4.58     |
+| [YOLOv10-M](https://huggingface.co/jenhung/CNO_Detection_YOLOv10-M)   |    512    |      16.5      |   63.4    |        91.3         |          59.7          |     7.17     |
+| [YOLOv10-B](https://huggingface.co/jenhung/CNO_Detection_YOLOv10-B)   |    512    |      20.4      |   97.7    |        91.1         |          62.5          |     7.58     |
+| [YOLOv10-L](https://huggingface.co/jenhung/CNO_Detection_YOLOv10-L)   |    512    |      25.7      |   126.3   |        91.4         |          63.2          |     9.01     |
+| [YOLOv10-X](https://huggingface.co/jenhung/CNO_DETECTION_YOLOv10-X)   |    512    |      31.6      |   169.8   |        91.2         |          62.9          |    10.95     |
+| [RT-DETRv2-S](https://huggingface.co/jenhung/CNO_Detection_RT-DETRv2-S) |    512    |      20.0      |   60.0    |        87.6         |          39.6          |     5.51     |
+| [RT-DETRv2-M](https://huggingface.co/jenhung/CNO_Detection_RT-DETRv2-m) |    512    |      31.0      |   100.0   |        84.0         |          37.2          |     7.48     |
+| [RT-DETRv2-L](https://huggingface.co/jenhung/CNO_Detection_RT-DETRv2-L) |    512    |      42.0      |   136.0   |        84.3         |          33.4          |    13.50     |
+| [RT-DETRv2-X](https://huggingface.co/jenhung/CNO_Detection_RT-DETRv2-X) |    512    |      76.0      |   259.0   |        83.3         |          32.0          |    21.15     |
 
 ## **Contributions**
 

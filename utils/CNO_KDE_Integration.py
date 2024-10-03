@@ -218,6 +218,7 @@ def cno_detect(folder_dir, model, conf):
     Area_avg = []
 
     file_list = []
+    file_type = "bcr"
 
     original_png_path = os.path.join(folder_dir, "CNO_Detection", "Image", "Original")
     enhanced_png_path = os.path.join(folder_dir, "CNO_Detection", "Image", "Enhanced")
@@ -246,11 +247,16 @@ def cno_detect(folder_dir, model, conf):
         for fn in files:
             if fn[0:2] != "._" and fn[-10:].lower() == '_trace.bcr' and directory == folder:
                 encyc.append(d + os.sep + fn)
+                file_type = "bcr"
+            elif fn[0:2] != "._" and fn[-3:].lower() == 'png' and directory == folder:
+                encyc.append(d + os.sep + fn)
+                file_type = "png"
+
     encyc.sort()
 
     if run_preprocessing:
         for i, fn in enumerate(encyc):
-            file = treat_one_image(fn, original_png_path, enhanced_png_path)
+            file = treat_one_image(fn, original_png_path, enhanced_png_path, file_type)
             file_list.append(file)
             print(i, end=' ')
     else:

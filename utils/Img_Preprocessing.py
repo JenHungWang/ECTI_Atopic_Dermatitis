@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from scipy import ndimage
 from matplotlib import cm
 from PIL import Image
-from skimage import morphology
+from skimage import io, morphology
 
 warnings.filterwarnings('ignore')  # Suppress warnings
 
@@ -66,9 +66,12 @@ def present(im, land):
 
 
 # Process a single image file, enhance its contrast, and save the original and enhanced images
-def treat_one_image(fn, original_png_path, enhanced_png_path):
+def treat_one_image(fn, original_png_path, enhanced_png_path, file_type):
     # Load image
-    im = load_im(fn)
+    if file_type == "bcr":
+        im = load_im(fn)
+    elif file_type == "png":
+        im = io.imread(fn, as_gray=True)
     # plt.imshow(im)
     # plt.show()
 

@@ -61,6 +61,13 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
             total_layer_area.append(nan_arr)
             total_layer_cno.append(nan_arr)
             total_layer_density.append(nan_arr)
+            emp_img = np.zeros((512, 512, 3), np.uint8)
+            emp_img = cv2.putText(emp_img, 'No Detection', (160,255), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255))
+            cv2.imwrite(os.path.join(kde_dir, '{}_{}_{}_bbox.png'.format(file_list[idx], model_type, conf)),
+                        emp_img)
+            cv2.imwrite(os.path.join(kde_dir, '{}_{}_{}_KDE.png'.format(file_list[idx], model_type, conf)),
+                        emp_img)
+
         else:
             CNO_coor = np.empty([CNO, 2], dtype=int)
             for j in range(CNO):

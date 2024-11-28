@@ -19,12 +19,12 @@ np.set_printoptions(threshold=sys.maxsize)
 # torch.cuda.set_device(0) # Set to your desired GPU number
 
 # Model Path
-DETECTION_MODEL_n = os.path.join(DIR_NAME, 'models', 'YOLOv10n.pt')
-DETECTION_MODEL_s = os.path.join(DIR_NAME, 'models', 'YOLOv10s.pt')
-DETECTION_MODEL_m = os.path.join(DIR_NAME, 'models', 'YOLOv10m.pt')
-DETECTION_MODEL_b = os.path.join(DIR_NAME, 'models', 'YOLOv10b.pt')
-DETECTION_MODEL_l = os.path.join(DIR_NAME, 'models', 'YOLOv10l.pt')
-DETECTION_MODEL_x = os.path.join(DIR_NAME, 'models', 'YOLOv10x.pt')
+DETECTION_MODEL_n = os.path.join(DIR_NAME, 'models', 'yolov10n.pt')
+DETECTION_MODEL_s = os.path.join(DIR_NAME, 'models', 'yolov10s.pt')
+DETECTION_MODEL_m = os.path.join(DIR_NAME, 'models', 'yolov10m.pt')
+DETECTION_MODEL_b = os.path.join(DIR_NAME, 'models', 'yolov10b.pt')
+DETECTION_MODEL_l = os.path.join(DIR_NAME, 'models', 'yolov10l.pt')
+DETECTION_MODEL_x = os.path.join(DIR_NAME, 'models', 'yolov10x.pt')
 
 def numcat(arr):
     arr_size = arr.shape[0]
@@ -200,22 +200,25 @@ def cno_detect(folder_dir, model, conf):
 
     # Extract folder information
     folder_info = folder.split('_')
-    if folder_info[2][0:2] == "TL":
-        Country = folder_info[0]
-        AD_severity = folder_info[1]
-        TLSS = int(folder_info[2].strip("TL"))
-        if TLSS == 0:
-            lesional = False
-        else:
-            lesional = True
-        Number = int(folder_info[-1].strip("No."))
-        AD_group = AD_severity.strip("G")
-    else:
-        Country = None
-        TLSS = None
-        lesional = None
-        Number = None
-        AD_group = None
+    Country = None
+    TLSS = None
+    lesional = None
+    Number = None
+    AD_group = None
+    try:
+        if folder_info[2][0:2] == "TL":
+            print("Match found!")
+            Country = folder_info[0]
+            AD_severity = folder_info[1]
+            TLSS = int(folder_info[2].strip("TL"))
+            if TLSS == 0:
+                lesional = False
+            else:
+                lesional = True
+            Number = int(folder_info[-1].strip("No."))
+            AD_group = AD_severity.strip("G")
+    except (IndexError, TypeError):
+        print("Invalid structure or data.")
 
     run_preprocessing = True
     timestr = time.strftime("%Y%m%d-%H%M%S")
@@ -290,7 +293,7 @@ def cno_detect(folder_dir, model, conf):
     # Write CSV
     # open the file in the write mode
     f = open(save_dir + os.sep + '{}_{}_{}_{}_.csv'.format(folder, timestr, model, conf), 'w')
-    header = ['File', 'Country', 'Group', 'No.', 'TLSS', 'Lesional',
+    header = ['File', 'Country', 'Group', 'No.', 'TLSS', 'Lesional', 'CNO',
 
               'Layer_Area_0', 'Layer_Area_1', 'Layer_Area_2', 'Layer_Area_3', 'Layer_Area_4',
               'Layer_Area_5', 'Layer_Area_6', 'Layer_Area_7', 'Layer_Area_8', 'Layer_Area_9',
@@ -318,7 +321,7 @@ def cno_detect(folder_dir, model, conf):
     writer.writerow(header)
 
     for i in range(len(file_list)):
-        data = [file_list[i], Country, AD_group, Number, TLSS, lesional,
+        data = [file_list[i], Country, AD_group, Number, TLSS, lesional, CNO_list[0][i],
 
                 Layer_area[i][0], Layer_area[i][1], Layer_area[i][2], Layer_area[i][3], Layer_area[i][4],
                 Layer_area[i][5], Layer_area[i][6], Layer_area[i][7], Layer_area[i][8], Layer_area[i][9],

@@ -579,12 +579,12 @@ class App(customtkinter.CTk):
 
     def show_image(self, image_view):
 
-        self.con_count = self.df['Layer_CNO_0'][image_view]
+        self.cno_count = self.df['CNO'][image_view]
         self.kde_density = round((self.df['Layer_Density_16'][image_view] +
                                   self.df['Layer_Density_17'][image_view] +
                                   self.df['Layer_Density_18'][image_view]) / 3.0, 4)
 
-        if self.con_count <= 59:
+        if self.cno_count <= 59:
             color = "red"
         else:
             color = "green"
@@ -597,7 +597,7 @@ class App(customtkinter.CTk):
         self.afm_img_result.grid(column=0, row=1, padx=20, pady=20, sticky="nsew")
         self.result_label_afm = customtkinter.CTkLabel(self.button_frame_afm,
                                                        text="CNO Count: {} | KDE Density: {}".format(
-                                                            self.con_count + 1, self.kde_density),
+                                                            self.cno_count + 1, self.kde_density),
                                                        font=customtkinter.CTkFont(size=16, weight="bold"),
                                                        text_color=color)
         self.result_label_afm.grid(row=0, column=0, padx=0, pady=(0, 20), sticky="new", columnspan=3)
@@ -613,7 +613,7 @@ class App(customtkinter.CTk):
         self.cno_img_result.grid(column=0, row=1, padx=20, pady=20, sticky="nsew")
         self.result_label_cno = customtkinter.CTkLabel(self.button_frame_cno,
                                                        text="CNO Count: {} | KDE Density: {}".format(
-                                                           self.con_count + 1, self.kde_density),
+                                                           self.cno_count + 1, self.kde_density),
                                                        font=customtkinter.CTkFont(size=16, weight="bold"),
                                                        text_color=color)
         self.result_label_cno.grid(row=0, column=0, padx=0, pady=(0, 20), sticky="new", columnspan=3)
@@ -629,7 +629,7 @@ class App(customtkinter.CTk):
         self.kde_img_result.grid(column=0, row=1, padx=20, pady=20, sticky="nsew")
         self.result_label_kde = customtkinter.CTkLabel(self.button_frame_kde,
                                                        text="CNO Count: {} | KDE Density: {}".format(
-                                                           self.con_count + 1, self.kde_density),
+                                                           self.cno_count + 1, self.kde_density),
                                                        font=customtkinter.CTkFont(size=16, weight="bold"),
                                                        text_color=color)
         self.result_label_kde.grid(row=0, column=0, padx=0, pady=(0, 20), sticky="new", columnspan=3)
@@ -641,7 +641,7 @@ class App(customtkinter.CTk):
         print(self.afm_files[image_view])
         print(self.cno_files[image_view])
         print(self.kde_files[image_view])
-        print('CNO Count: ', self.con_count)
+        print('CNO Count: ', self.cno_count)
         print('KDE Density: ', self.kde_density)
 
 

@@ -30,6 +30,9 @@ This repository presents an objective, quantifiable method for assessing atopic 
         ```    
         pip install -r requirements.txt
         ```
+        ```
+        pip install -q git+https://github.com/THU-MIG/yolov10.git
+        ```
     - Run `AD_Assessment_GUI.py`
     - Analysis results will be saved within the selected path in a folder titled `CNO_Detection`
 

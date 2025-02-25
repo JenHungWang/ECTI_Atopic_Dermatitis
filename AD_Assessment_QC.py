@@ -13,6 +13,7 @@ from ultralytics import YOLOv10 as YOLO
 from sklearn.neighbors import KernelDensity
 from sklearn.model_selection import GridSearchCV
 from config.global_settings import import_config_dict
+from utils.QC_Predictor import get_predictor
 
 # Import config files
 config_dict = import_config_dict()
@@ -22,6 +23,8 @@ DATA_PATH = config_dict['PATH']['source']
 MODEL = config_dict['MODEL']['model']
 MODEL_PATH = config_dict['MODEL']['folder_path']
 CONF = config_dict['MODEL']['conf_threshold']
+QC_MODEL = config_dict['QC']['model']
+QC_MODEL_PATH = config_dict['QC']['folder_path']
 DIR_NAME = Path(os.path.dirname(__file__))
 warnings.filterwarnings('ignore')  # Suppress warnings
 np.set_printoptions(threshold=sys.maxsize)  # Print full numpy arrays
@@ -30,7 +33,7 @@ np.set_printoptions(threshold=sys.maxsize)  # Print full numpy arrays
 
 # Model path
 DETECTION_MODEL = os.path.join(MODEL_PATH, MODEL)
-
+QC_PREDICTOR = os.path.join(QC_MODEL_PATH, QC_MODEL)
 
 # The numcat function concatenates two integers in each row of the input 2D array
 def numcat(arr):
@@ -50,6 +53,7 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
     total_layer_density = []
     avg_area_col = []
     total_area_col = []
+    qc_pred = []
 
     detection_results = cno_model.predict(source, save=False, save_txt=False, iou=0.5, conf=conf, max_det=1200)
 
@@ -178,7 +182,28 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
             plt.clf()
         cno_col.append(cno)
 
-    return cno_col, avg_area_col, total_area_col, total_layer_area, total_layer_cno, total_layer_density
+    # Create predictor instance
+    predictor = get_predictor(QC_PREDICTOR, model_name='RETFound_mae', num_classes=2, input_size=224)
+
+    # Get all PNG files in the folder
+    png_files = [f for f in Path(source).glob("*.png")]
+
+    if not png_files:
+        print(f"No PNG files found in {source}")
+        return
+
+    # Process each image
+    for image_path in png_files:
+        print(f"\nQC Processing: {image_path.name}")
+        result = predictor.predict(image_path)
+
+        print(f"Predicted class: {result['predicted_class']}")
+        print(f"Result: {result['result']}")
+        print(f"Confidence: {result['confidence']:.4f}")
+        print(f"All probabilities: {result['probabilities']}")
+        qc_pred.append(result['result'])
+
+    return cno_col, avg_area_col, total_area_col, total_layer_area, total_layer_cno, total_layer_density, qc_pred
 
 
 def main(folder_dir, model, conf):
@@ -271,8 +296,8 @@ def main(folder_dir, model, conf):
         print("Conf", conf)
 
         # CNO detection & KDE calculation
-        cno_col, avg_area_col, total_area_col, layer_area, layer_cno, layer_density = cno_detection(enhanced_png_path, kde_png_path, conf, cno_model,
-                                                                                                    file_list, model)
+        cno_col, avg_area_col, total_area_col, layer_area, layer_cno, layer_density, qc_prediction = cno_detection(enhanced_png_path, kde_png_path, conf, cno_model,
+                                                                                                                   file_list, model)
         cno_list.append(cno_col)
         area_sum.append(total_area_col)
         area_avg.append(avg_area_col)
@@ -280,7 +305,7 @@ def main(folder_dir, model, conf):
         # Write CSV
         # open the file in the write mode
         f = open(save_dir + os.sep + '{}_{}.csv'.format(folder, timestr), 'w')
-        header = ['File', 'Country', 'Group', 'No.', 'TLSS', 'Lesional', 'CNO',
+        header = ['File', 'Country', 'Group', 'No.', 'TLSS', 'Lesional', 'CNO', 'QC',
 
                   'Layer_Area_0', 'Layer_Area_1', 'Layer_Area_2', 'Layer_Area_3', 'Layer_Area_4',
                   'Layer_Area_5', 'Layer_Area_6', 'Layer_Area_7', 'Layer_Area_8', 'Layer_Area_9',
@@ -308,7 +333,7 @@ def main(folder_dir, model, conf):
         writer.writerow(header)
 
         for i in range(len(file_list)):
-            data = [file_list[i], country, ad_group, number, tlss, lesional, cno_list[0][i],
+            data = [file_list[i], country, ad_group, number, tlss, lesional, cno_list[0][i], qc_prediction[i],
 
                     layer_area[i][0], layer_area[i][1], layer_area[i][2], layer_area[i][3], layer_area[i][4],
                     layer_area[i][5], layer_area[i][6], layer_area[i][7], layer_area[i][8], layer_area[i][9],

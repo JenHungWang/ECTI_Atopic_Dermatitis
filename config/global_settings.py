@@ -23,6 +23,9 @@ def import_config_dict():
     config.read('config/model.ini')
     config_dict.update(create_config_dict(config))
 
+    config.read('config/qc.ini')
+    config_dict.update(create_config_dict(config))
+
     config_dict['MODEL']['conf_threshold'] = \
         float(config_dict['MODEL']['conf_threshold'])
 

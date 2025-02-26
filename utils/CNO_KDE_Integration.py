@@ -8,7 +8,7 @@ import math
 import matplotlib.pyplot as plt
 from pathlib import Path
 from utils.Img_Preprocessing import *
-from ultralytics import YOLO
+from ultralytics import YOLOv10 as YOLO
 from sklearn.neighbors import KernelDensity
 from sklearn.model_selection import GridSearchCV
 

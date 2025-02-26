@@ -54,6 +54,7 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
     avg_area_col = []
     total_area_col = []
     qc_pred = []
+    qc_conf = []
 
     detection_results = cno_model.predict(source, save=False, save_txt=False, iou=0.5, conf=conf, max_det=1200)
 
@@ -202,8 +203,9 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
         print(f"Confidence: {result['confidence']:.4f}")
         print(f"All probabilities: {result['probabilities']}")
         qc_pred.append(result['result'])
+        qc_conf.append(round(result['confidence'], 3))
 
-    return cno_col, avg_area_col, total_area_col, total_layer_area, total_layer_cno, total_layer_density, qc_pred
+    return cno_col, avg_area_col, total_area_col, total_layer_area, total_layer_cno, total_layer_density, qc_pred, qc_conf
 
 
 def main(folder_dir, model, conf):
@@ -296,7 +298,7 @@ def main(folder_dir, model, conf):
         print("Conf", conf)
 
         # CNO detection & KDE calculation
-        cno_col, avg_area_col, total_area_col, layer_area, layer_cno, layer_density, qc_prediction = cno_detection(enhanced_png_path, kde_png_path, conf, cno_model,
+        cno_col, avg_area_col, total_area_col, layer_area, layer_cno, layer_density, qc_prediction, qc_conf = cno_detection(enhanced_png_path, kde_png_path, conf, cno_model,
                                                                                                                    file_list, model)
         cno_list.append(cno_col)
         area_sum.append(total_area_col)
@@ -305,7 +307,7 @@ def main(folder_dir, model, conf):
         # Write CSV
         # open the file in the write mode
         f = open(save_dir + os.sep + '{}_{}.csv'.format(folder, timestr), 'w')
-        header = ['File', 'Country', 'Group', 'No.', 'TLSS', 'Lesional', 'CNO', 'QC',
+        header = ['File', 'Country', 'Group', 'No.', 'TLSS', 'Lesional', 'CNO', 'QC', 'QC_Conf',
 
                   'Layer_Area_0', 'Layer_Area_1', 'Layer_Area_2', 'Layer_Area_3', 'Layer_Area_4',
                   'Layer_Area_5', 'Layer_Area_6', 'Layer_Area_7', 'Layer_Area_8', 'Layer_Area_9',
@@ -333,7 +335,7 @@ def main(folder_dir, model, conf):
         writer.writerow(header)
 
         for i in range(len(file_list)):
-            data = [file_list[i], country, ad_group, number, tlss, lesional, cno_list[0][i], qc_prediction[i],
+            data = [file_list[i], country, ad_group, number, tlss, lesional, cno_list[0][i], qc_prediction[i], qc_conf[i],
 
                     layer_area[i][0], layer_area[i][1], layer_area[i][2], layer_area[i][3], layer_area[i][4],
                     layer_area[i][5], layer_area[i][6], layer_area[i][7], layer_area[i][8], layer_area[i][9],

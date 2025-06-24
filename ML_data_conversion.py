@@ -4,10 +4,11 @@ import sys
 import glob
 from pathlib import Path
 from utils.Img_Preprocessing import *
+import shutil
 from config.global_settings import import_config_dict
 
 # folder path
-DATA_PATH = "/Users/jen-hung/Desktop/TestData/Test_NS"
+DATA_PATH = "/Users/jen-hung/Desktop/Test12/"
 DIR_NAME = Path(os.path.dirname(__file__))
 warnings.filterwarnings('ignore')  # Suppress warnings
 np.set_printoptions(threshold=sys.maxsize)  # Print full numpy arrays
@@ -68,10 +69,10 @@ def main(folder_dir):
                     encyc.append(d + os.sep + fn)
                     file_type = "bcr"
                 elif (fn[0:2] != "._" and
-                      fn.lower().endswith('.png') and
+                      fn.lower().endswith('.nid') and
                       directory == folder):
                     encyc.append(d + os.sep + fn)
-                    file_type = "png"
+                    file_type = "nid"
         encyc.sort()
         print("Files: ", encyc)
         print("File type: ", file_type)
@@ -85,17 +86,32 @@ def main(folder_dir):
                 elif fn.lower().endswith('_retrace.bcr'):
                     file = treat_one_image(fn, original_retrace_path, enhanced_retrace_path, file_type)
                     file_list.append(file)
-                elif file_type == "png":
-                    if 'backward' in fn.lower():
-                        file = treat_one_image(fn, original_ns_retrace_path, enhanced_ns_retrace_path, file_type)
-                        file_list.append(file)
-                    else:
-                        file = treat_one_image(fn, original_ns_trace_path, enhanced_ns_trace_path, file_type)
-                        file_list.append(file)
+                elif file_type == "nid":
+                    file = treat_one_image(fn, original_ns_trace_path, enhanced_ns_trace_path, file_type)
+                    file_list.extend(file)
                 print(i, end=' ')
         else:
             for i, fn in enumerate(encyc):
-                file_list.append(os.path.split(fn)[1][0:-10])
+                base = os.path.split(fn)[1][0:-10]
+                if file_type == 'nid':
+                    # For .nid, add both forward and backward names
+                    file_list.extend([f"{base}_backward", f"{base}_forward"])
+                else:
+                    file_list.append(base)
+
+        if file_type == 'nid':
+            # Loop through and move files
+            for filename in os.listdir(original_ns_trace_path):
+                if 'backward' in filename and filename.endswith('.png'):
+                    src = os.path.join(original_ns_trace_path, filename)
+                    dst = os.path.join(original_ns_retrace_path, filename)
+                    shutil.move(src, dst)
+            for filename in os.listdir(enhanced_ns_trace_path):
+                if 'backward' in filename and filename.endswith('.png'):
+                    src = os.path.join(enhanced_ns_trace_path, filename)
+                    dst = os.path.join(enhanced_ns_retrace_path, filename)
+                    shutil.move(src, dst)
+                    # print(f"Moved: {filename}")
 
 
 if __name__ == "__main__":

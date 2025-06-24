@@ -255,23 +255,32 @@ def cno_detect(folder_dir, model, conf):
     for d, sd, files in walk:
         directory = d.split(os.sep)[-1]
         for fn in files:
-            if fn[0:2] != "._" and fn[-10:].lower() == '_trace.bcr' and directory == folder:
+            if (fn[0:2] != "._" and
+                    (fn.lower().endswith('_trace.bcr') or fn.lower().endswith('_retrace.bcr')) and directory == folder):
                 encyc.append(d + os.sep + fn)
                 file_type = "bcr"
-            elif fn[0:2] != "._" and fn[-3:].lower() == 'png' and directory == folder:
+            elif fn[0:2] != "._" and fn[-3:].lower() == 'nid' and directory == folder:
                 encyc.append(d + os.sep + fn)
-                file_type = "png"
+                file_type = "nid"
 
     encyc.sort()
 
     if run_preprocessing:
         for i, fn in enumerate(encyc):
             file = treat_one_image(fn, original_png_path, enhanced_png_path, file_type)
-            file_list.append(file)
+            if file_type == 'nid':
+                file_list.extend(file)
+            else:
+                file_list.append(file)
             print(i, end=' ')
     else:
         for i, fn in enumerate(encyc):
-            file_list.append(os.path.split(fn)[1][0:-10])
+            base = os.path.split(fn)[1][0:-10]
+            if file_type == 'nid':
+                # For .nid, add both forward and backward names
+                file_list.extend([f"{base}_backward", f"{base}_forward"])
+            else:
+                file_list.append(base)
 
     # CNO Detection & AD Classification
     print("Model", model)

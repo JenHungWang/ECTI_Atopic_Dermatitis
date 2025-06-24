@@ -9,6 +9,8 @@ from scipy import ndimage
 from matplotlib import cm
 from PIL import Image
 from skimage import io, morphology
+from NSFopen import read
+
 
 warnings.filterwarnings('ignore')  # Suppress warnings
 
@@ -33,6 +35,18 @@ def load_im(fn):
     im = im - np.min(im)
     im = im / np.max(im)  # normalize to 0.0-1.0
     return im
+
+
+# Helper function to normalize and convert array to uint8
+def normalize_to_uint8(array):
+    array = np.array(array, dtype=float)
+    array = np.flipud(array)  # Flip vertically to fix orientation
+    min_val = np.min(array)
+    ptp_val = np.ptp(array)  # Peak-to-peak (max - min)
+    if ptp_val == 0:
+        return np.zeros_like(array, dtype=np.uint8)
+    norm_array = 255 * (array - min_val) / ptp_val
+    return norm_array.astype(np.uint8)
 
 
 # Apply pyramid contrast enhancement to an image
@@ -65,31 +79,71 @@ def present(im, land):
     return original_im, enhanced_im
 
 
+# Process a single .nid file, extract Forward/Backward data, and apply contrast enhancement
+def process_nid_file(fn, original_png_path, enhanced_png_path):
+    try:
+        data = read(fn)
+        # Extract Z-Axis data
+        forward_data = data.data["Image"]["Forward"]["Z-Axis"]
+        backward_data = data.data["Image"]["Backward"]["Z-Axis"]
+
+        # Base name without extension
+        base = os.path.splitext(os.path.basename(fn))[0]
+
+        # Process forward data
+        im = np.array(forward_data, dtype=float)
+        im = np.flipud(im)  # Flip vertically to match .bcr orientation
+        # Reduce horizontal artifacts (as in load_im)
+        im = (im.T - np.mean(im, axis=1) +
+              np.mean(ndimage.gaussian_filter(im, 10), axis=1)).T
+        # Normalize to 0.0–1.0 (as in load_im)
+        im = im - np.min(im)
+        im = im / np.max(im) if np.max(im) != 0 else im
+        land = pyramid_contrast(im)
+        original_im, enhanced_im = present(im, land)
+        original_im.save(os.path.join(original_png_path, f"{base}_forward.png"))
+        enhanced_im.save(os.path.join(enhanced_png_path, f"{base}_forward.png"))
+
+        # Process backward data
+        im = np.array(backward_data, dtype=float)
+        im = np.flipud(im)  # Flip vertically to match .bcr orientation
+        # Reduce horizontal artifacts (as in load_im)
+        im = (im.T - np.mean(im, axis=1) +
+              np.mean(ndimage.gaussian_filter(im, 10), axis=1)).T
+        # Normalize to 0.0–1.0 (as in load_im)
+        im = im - np.min(im)
+        im = im / np.max(im) if np.max(im) != 0 else im
+        land = pyramid_contrast(im)
+        original_im, enhanced_im = present(im, land)
+        original_im.save(os.path.join(original_png_path, f"{base}_backward.png"))
+        enhanced_im.save(os.path.join(enhanced_png_path, f"{base}_backward.png"))
+
+        return [f"{base}_backward", f"{base}_forward"]
+    except Exception as e:
+        print(f"Failed to process {fn}: {e}")
+        return None
+
+
 # Process a single image file, enhance its contrast, and save the original and enhanced images
 def treat_one_image(fn, original_png_path, enhanced_png_path, file_type):
     # Load image
-    if file_type == "bcr":
+    if file_type == "nid":
+        file_name = process_nid_file(fn, original_png_path, enhanced_png_path)
+    elif file_type == "bcr":
         im = load_im(fn)
-    elif file_type == "png":
-        im = io.imread(fn, as_gray=True)
-        # Apply enhancement to reduce horizontal artifacts
-        im = (im.T - np.mean(im, axis=1) + np.mean(ndimage.gaussian_filter(im, 10), axis=1)).T
-        # Normalize to 0.0–1.0
-        im = im - np.min(im)
-        im = im / np.max(im) if np.max(im) != 0 else im
-    # plt.imshow(im)
-    # plt.show()
+        # plt.imshow(im)
+        # plt.show()
 
-    # Enhance contrast using pyramid contrast
-    land = pyramid_contrast(im)
-    # plt.imshow(land)
-    # plt.show()
+        # Enhance contrast using pyramid contrast
+        land = pyramid_contrast(im)
+        # plt.imshow(land)
+        # plt.show()
 
-    # Visualize and save the original and enhanced images
-    original_im, enhanced_im = present(im, land)
-    file_name = os.path.split(fn)[1][0:-4]
-    original_im.save(os.path.join(original_png_path, file_name) + '.png')
-    enhanced_im.save(os.path.join(enhanced_png_path, file_name) + '.png')
+        # Visualize and save the original and enhanced images
+        original_im, enhanced_im = present(im, land)
+        file_name = os.path.split(fn)[1][0:-4]
+        original_im.save(os.path.join(original_png_path, file_name) + '.png')
+        enhanced_im.save(os.path.join(enhanced_png_path, file_name) + '.png')
 
     return file_name
 

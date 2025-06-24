@@ -72,6 +72,11 @@ def treat_one_image(fn, original_png_path, enhanced_png_path, file_type):
         im = load_im(fn)
     elif file_type == "png":
         im = io.imread(fn, as_gray=True)
+        # Apply enhancement to reduce horizontal artifacts
+        im = (im.T - np.mean(im, axis=1) + np.mean(ndimage.gaussian_filter(im, 10), axis=1)).T
+        # Normalize to 0.0–1.0
+        im = im - np.min(im)
+        im = im / np.max(im) if np.max(im) != 0 else im
     # plt.imshow(im)
     # plt.show()
 

@@ -35,6 +35,7 @@ np.set_printoptions(threshold=sys.maxsize)  # Print full numpy arrays
 DETECTION_MODEL = os.path.join(MODEL_PATH, MODEL)
 QC_PREDICTOR = os.path.join(QC_MODEL_PATH, QC_MODEL)
 
+
 # The numcat function concatenates two integers in each row of the input 2D array
 def numcat(arr):
     arr_size = arr.shape[0]
@@ -223,7 +224,7 @@ def main(folder_dir, model, conf):
 
         # Extract folder information
         folder_info = folder.split('_')
-        if folder_info[2][0:2] == "TL":
+        if folder_info[1][0:2] == "TL":
             country = folder_info[0]
             ad_severity = folder_info[1]
             tlss = int(folder_info[2].strip("TL"))

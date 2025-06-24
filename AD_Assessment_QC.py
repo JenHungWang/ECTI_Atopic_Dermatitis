@@ -14,7 +14,6 @@ from sklearn.neighbors import KernelDensity
 from sklearn.model_selection import GridSearchCV
 from config.global_settings import import_config_dict
 from utils.QC_Predictor import get_predictor
-from itertools import chain
 
 # Import config files
 config_dict = import_config_dict()

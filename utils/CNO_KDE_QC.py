@@ -302,8 +302,13 @@ def cno_detect(folder_dir, model, conf):
         for i, fn in enumerate(encyc):
             base = os.path.split(fn)[1][0:-10]
             if file_type == 'nid':
-                # For .nid, add both forward and backward names
-                file_list.extend([f"{base}_backward", f"{base}_forward"])
+                # For .nid, add names based on direction
+                if "_OB" in fn:
+                    file_list.append(f"{base}_backward")
+                elif "_OF" in fn:
+                    file_list.append(f"{base}_forward")
+                else:
+                    file_list.extend([f"{base}_backward", f"{base}_forward"])
             else:
                 file_list.append(base)
 

@@ -289,6 +289,7 @@ def main(folder_dir, model, conf):
         # Image preprocessing
         if run_preprocessing:
             for i, fn in enumerate(encyc):
+                file_type = "bcr" if fn.lower().endswith(('.bcr')) else "nid"
                 file = treat_one_image(fn, original_png_path, enhanced_png_path, file_type)
                 if file_type == 'nid':
                     file_list.extend(file)
@@ -297,6 +298,7 @@ def main(folder_dir, model, conf):
                 print(i, end=' ')
         else:
             for i, fn in enumerate(encyc):
+                file_type = "bcr" if fn.lower().endswith(('.bcr')) else "nid"
                 base = os.path.split(fn)[1][0:-10]
                 if file_type == 'nid':
                     # For .nid, add names based on direction

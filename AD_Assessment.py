@@ -9,7 +9,7 @@ import csv
 import matplotlib.pyplot as plt
 from pathlib import Path
 from utils.Img_Preprocessing import *
-from ultralytics import YOLOv10 as YOLO
+from ultralytics import YOLO
 from sklearn.neighbors import KernelDensity
 from sklearn.model_selection import GridSearchCV
 from config.global_settings import import_config_dict

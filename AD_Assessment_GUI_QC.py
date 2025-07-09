@@ -348,7 +348,7 @@ class App(customtkinter.CTk):
         if len(folder_path) != 0:
             self.data_path_field.delete(0, 300)
             self.data_path_field.insert(0, folder_path)
-        print(folder_path)
+        print("Selected folder:", folder_path)
 
     def age_sliding(self, value:int):
         self.age_val_label.configure(text=int(value))
@@ -372,33 +372,32 @@ class App(customtkinter.CTk):
         self.scaling_val_label.configure(text=int(value))
 
     def analyze_event(self):
-
         # Retrieve User Input
         self.folder_dir = self.data_path_field.get()
         print("Folder Directory: ", self.folder_dir)
 
         if len(self.folder_dir) == 0:
             self.afm_img_result.configure(text="Please select folder directory", text_color="red", image="",
-                                          width=IMAGE_WIDTH, height=IMAGE_HEIGHT,
-                                          font=customtkinter.CTkFont(size=16, weight="bold"))
+                                        width=IMAGE_WIDTH, height=IMAGE_HEIGHT,
+                                        font=customtkinter.CTkFont(size=16, weight="bold"))
             self.cno_img_result.configure(text="Please select folder directory", text_color="red", image="",
-                                          width=IMAGE_WIDTH, height=IMAGE_HEIGHT,
-                                          font=customtkinter.CTkFont(size=16, weight="bold"))
+                                        width=IMAGE_WIDTH, height=IMAGE_HEIGHT,
+                                        font=customtkinter.CTkFont(size=16, weight="bold"))
             self.kde_img_result.configure(text="Please select folder directory", text_color="red", image="",
-                                          width=IMAGE_WIDTH, height=IMAGE_HEIGHT,
-                                          font=customtkinter.CTkFont(size=16, weight="bold"))
+                                        width=IMAGE_WIDTH, height=IMAGE_HEIGHT,
+                                        font=customtkinter.CTkFont(size=16, weight="bold"))
             return
 
         elif not os.path.exists(self.folder_dir):
             self.afm_img_result.configure(text="Folder directory is empty", text_color="red", image="",
-                                          width=IMAGE_WIDTH, height=IMAGE_HEIGHT,
-                                          font=customtkinter.CTkFont(size=16, weight="bold"))
+                                        width=IMAGE_WIDTH, height=IMAGE_HEIGHT,
+                                        font=customtkinter.CTkFont(size=16, weight="bold"))
             self.cno_img_result.configure(text="Folder directory is empty", text_color="red", image="",
-                                          width=IMAGE_WIDTH, height=IMAGE_HEIGHT,
-                                          font=customtkinter.CTkFont(size=16, weight="bold"))
+                                        width=IMAGE_WIDTH, height=IMAGE_HEIGHT,
+                                        font=customtkinter.CTkFont(size=16, weight="bold"))
             self.kde_img_result.configure(text="Folder directory is empty", text_color="red", image="",
-                                          width=IMAGE_WIDTH, height=IMAGE_HEIGHT,
-                                          font=customtkinter.CTkFont(size=16, weight="bold"))
+                                        width=IMAGE_WIDTH, height=IMAGE_HEIGHT,
+                                        font=customtkinter.CTkFont(size=16, weight="bold"))
             return
 
         else:
@@ -447,14 +446,16 @@ class App(customtkinter.CTk):
         self.scaling = self.scaling_val_label.cget("text")
         print("TLSS - Scaling: ", self.scaling)
 
-        # self.model = self.model_optionmenu.cget("variable")
         print("Detection Model: ", self.model)
-
-        # self.conf = float(self.conf_optionmenu.get())
         print("Confidence Threshold: ", self.conf)
 
-        self.analyze_btn.grid_forget()
-        self.stop_btn.grid_forget()
+        # Hide Analyze and Stop buttons
+        for widget in self.button_frame_afm.winfo_children():
+            widget.grid_forget()
+        for widget in self.button_frame_cno.winfo_children():
+            widget.grid_forget()
+        for widget in self.button_frame_kde.winfo_children():
+            widget.grid_forget()
 
         self.afm_path = os.path.join(self.folder_dir, "CNO_Detection", "Image", "Enhanced")
         self.cno_path = os.path.join(self.folder_dir, "CNO_Detection", "Image", "KDE")
@@ -466,10 +467,7 @@ class App(customtkinter.CTk):
             self.csv_files = os.listdir(self.csv_path)
 
             for i in range(len(self.csv_files)):
-                # print("files", self.csv_files)
                 csv_info = self.csv_files[i].split('_')
-                # print("csv info", csv_info)
-
                 if self.model in csv_info and str(self.conf) in csv_info:
                     self.run_analyze = False
                     print("Read csv", os.path.join(self.csv_path, self.csv_files[i]))
@@ -479,97 +477,86 @@ class App(customtkinter.CTk):
 
         if self.run_analyze:
             self.afm_img_result.configure(text="Analyzing...Please wait.",
-                                          font=customtkinter.CTkFont(size=16, weight="bold"))
+                                        font=customtkinter.CTkFont(size=16, weight="bold"))
             self.cno_img_result.configure(text="Analyzing...Please wait.",
-                                          font=customtkinter.CTkFont(size=16, weight="bold"))
+                                        font=customtkinter.CTkFont(size=16, weight="bold"))
             self.kde_img_result.configure(text="Analyzing...Please wait.",
-                                          font=customtkinter.CTkFont(size=16, weight="bold"))
+                                        font=customtkinter.CTkFont(size=16, weight="bold"))
             print("Analyzing...")
 
-            t1 = threading.Thread(target=cno_detect(self.folder_dir, self.model, self.conf))
+            t1 = threading.Thread(target=cno_detect, args=(self.folder_dir, self.model, self.conf))
+            t1.start()
+            t1.join()  # Wait for the thread to complete to avoid GUI issues
 
             list_of_files = glob.glob(os.path.join(self.csv_path, '*.csv'))
-            latest_file = max(list_of_files, key=os.path.getmtime)
-            print("Read csv", latest_file)
-            self.df = pandas.read_csv(latest_file)
+            if list_of_files:
+                latest_file = max(list_of_files, key=os.path.getmtime)
+                print("Read csv", latest_file)
+                self.df = pandas.read_csv(latest_file)
+            else:
+                print("No CSV files found")
+                return
 
-        self.button_frame_afm.grid_forget()
-        self.button_frame_cno.grid_forget()
-        self.button_frame_kde.grid_forget()
-
-        self.button_frame_afm = customtkinter.CTkFrame(self.tabview.tab("AFM"))
-        self.button_frame_afm.grid(row=2, column=0, padx=80, pady=(0, 20), sticky="new")
-        self.button_frame_afm.grid_columnconfigure((0, 1, 2), weight=1)
-
-        self.button_frame_cno = customtkinter.CTkFrame(self.tabview.tab("CNO"))
-        self.button_frame_cno.grid(row=2, column=0, padx=80, pady=(0, 20), sticky="new")
-        self.button_frame_cno.grid_columnconfigure((0, 1, 2), weight=1)
-
-        self.button_frame_kde = customtkinter.CTkFrame(self.tabview.tab("KDE"))
-        self.button_frame_kde.grid(row=2, column=0, padx=80, pady=(0, 20), sticky="new")
-        self.button_frame_kde.grid_columnconfigure((0, 1, 2), weight=1)
-
-        self.afm_files = [f for f in os.listdir(self.afm_path) if os.path.isfile(os.path.join(self.afm_path, f))]
-        self.cno_files = [f for f in os.listdir(self.cno_path) if
-                          os.path.isfile(os.path.join(self.cno_path, f)) and f.endswith("{}_{}_bbox.png".format(self.model, self.conf))]
-        self.kde_files = [f for f in os.listdir(self.cno_path) if
-                          os.path.isfile(os.path.join(self.cno_path, f)) and f.endswith("{}_{}_KDE.png".format(self.model, self.conf))]
-        self.image_num = len(self.afm_files)
-        self.image_view = 0
-
+        # Update button frames with new widgets instead of recreating them
         # AFM Results
         self.result_label_afm = customtkinter.CTkLabel(self.button_frame_afm,
-                                                       text=" ", font=customtkinter.CTkFont(size=16, weight="bold"))
+                                                    text=" ", font=customtkinter.CTkFont(size=16, weight="bold"))
         self.result_label_afm.grid(row=0, column=0, padx=0, pady=(0, 5), sticky="new", columnspan=3)
         self.qc_label_afm = customtkinter.CTkLabel(self.button_frame_afm,
-                                                   text=" ",
-                                                   font=customtkinter.CTkFont(size=16, weight="bold"))
+                                                text=" ",
+                                                font=customtkinter.CTkFont(size=16, weight="bold"))
         self.qc_label_afm.grid(row=1, column=0, padx=0, pady=(0, 15), sticky="new", columnspan=3)
         self.previous_btn_afm = customtkinter.CTkButton(self.button_frame_afm, command=self.previous_event,
                                                         text="Previous")
         self.previous_btn_afm.grid(row=2, column=0, padx=10, sticky="new")
-        self.image_label_afm = customtkinter.CTkLabel(self.button_frame_afm, text="{} / {}".format(self.image_view + 1,
-                                                                                                   self.image_num))
+        self.image_label_afm = customtkinter.CTkLabel(self.button_frame_afm, text="1 / 1")
         self.image_label_afm.grid(row=2, column=1, padx=10, pady=(0, 5), sticky="new")
         self.next_btn_afm = customtkinter.CTkButton(self.button_frame_afm, command=self.next_event, text="Next")
         self.next_btn_afm.grid(row=2, column=2, padx=10, sticky="new")
 
         # CNO Results
         self.result_label_cno = customtkinter.CTkLabel(self.button_frame_cno,
-                                                       text=" ",
-                                                       font=customtkinter.CTkFont(size=16, weight="bold"))
+                                                    text=" ",
+                                                    font=customtkinter.CTkFont(size=16, weight="bold"))
         self.result_label_cno.grid(row=0, column=0, padx=0, pady=(0, 5), sticky="new", columnspan=3)
         self.qc_label_cno = customtkinter.CTkLabel(self.button_frame_cno,
-                                                   text=" ",
-                                                   font=customtkinter.CTkFont(size=16, weight="bold"))
+                                                text=" ",
+                                                font=customtkinter.CTkFont(size=16, weight="bold"))
         self.qc_label_cno.grid(row=1, column=0, padx=0, pady=(0, 15), sticky="new", columnspan=3)
         self.previous_btn_cno = customtkinter.CTkButton(self.button_frame_cno, command=self.previous_event,
                                                         text="Previous")
         self.previous_btn_cno.grid(row=2, column=0, padx=10, sticky="new")
-        self.image_label_cno = customtkinter.CTkLabel(self.button_frame_cno,
-                                                      text="{} / {}".format(self.image_view + 1, self.image_num))
+        self.image_label_cno = customtkinter.CTkLabel(self.button_frame_cno, text="1 / 1")
         self.image_label_cno.grid(row=2, column=1, padx=10, pady=(0, 5), sticky="new")
         self.next_btn_cno = customtkinter.CTkButton(self.button_frame_cno, command=self.next_event, text="Next")
         self.next_btn_cno.grid(row=2, column=2, padx=10, sticky="new")
 
         # KDE Results
         self.result_label_kde = customtkinter.CTkLabel(self.button_frame_kde,
-                                                       text=" ",
-                                                       font=customtkinter.CTkFont(size=16, weight="bold"))
+                                                    text=" ",
+                                                    font=customtkinter.CTkFont(size=16, weight="bold"))
         self.result_label_kde.grid(row=0, column=0, padx=0, pady=(0, 5), sticky="new", columnspan=3)
         self.qc_label_kde = customtkinter.CTkLabel(self.button_frame_kde,
-                                                   text=" ",
-                                                   font=customtkinter.CTkFont(size=16, weight="bold"))
+                                                text=" ",
+                                                font=customtkinter.CTkFont(size=16, weight="bold"))
         self.qc_label_kde.grid(row=1, column=0, padx=0, pady=(0, 15), sticky="new", columnspan=3)
         self.previous_btn_kde = customtkinter.CTkButton(self.button_frame_kde, command=self.previous_event,
                                                         text="Previous")
         self.previous_btn_kde.grid(row=2, column=0, padx=10, sticky="new")
-        self.image_label_kde = customtkinter.CTkLabel(self.button_frame_kde,
-                                                      text="{} / {}".format(self.image_view + 1, self.image_num))
+        self.image_label_kde = customtkinter.CTkLabel(self.button_frame_kde, text="1 / 1")
         self.image_label_kde.grid(row=2, column=1, padx=10, pady=(0, 5), sticky="new")
         self.next_btn_kde = customtkinter.CTkButton(self.button_frame_kde, command=self.next_event, text="Next")
         self.next_btn_kde.grid(row=2, column=2, padx=10, sticky="new")
 
+        self.afm_files = [f for f in os.listdir(self.afm_path) if os.path.isfile(os.path.join(self.afm_path, f))]
+        self.cno_files = [f for f in os.listdir(self.cno_path) if
+                        os.path.isfile(os.path.join(self.cno_path, f)) and f.endswith("{}_{}_bbox.png".format(self.model, self.conf))]
+        self.kde_files = [f for f in os.listdir(self.cno_path) if
+                        os.path.isfile(os.path.join(self.cno_path, f)) and f.endswith("{}_{}_KDE.png".format(self.model, self.conf))]
+        self.image_num = len(self.afm_files)
+        self.image_view = 0
+
+        self.update_idletasks()  # Ensure GUI updates are processed
         self.show_image(self.image_view)
 
     def next_event(self):

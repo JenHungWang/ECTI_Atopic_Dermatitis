@@ -182,6 +182,7 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
 
 
 def main(folder_dir, model, conf):
+    
     cno_model = YOLO(str(DETECTION_MODEL))
 
     # Search folder path

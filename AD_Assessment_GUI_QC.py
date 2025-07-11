@@ -491,7 +491,7 @@ class App(customtkinter.CTk):
             list_of_files = glob.glob(os.path.join(self.csv_path, '*.csv'))
             latest_file = max(list_of_files, key=os.path.getmtime)
             print("Read csv", latest_file)
-            self.df = pandas.read_csv(latest_file)
+            self.df = pandas.read_csv(latest_file, ignore_errors='ignore')
 
         self.button_frame_afm.grid_forget()
         self.button_frame_cno.grid_forget()

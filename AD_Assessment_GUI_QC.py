@@ -492,7 +492,7 @@ class App(customtkinter.CTk):
             if list_of_files:
                 latest_file = max(list_of_files, key=os.path.getmtime)
                 print("Read csv", latest_file)
-                self.df = pandas.read_csv(latest_file)
+                self.df = pandas.read_csv(latest_file, encoding_errors='ignore')
             else:
                 print("No CSV files found")
                 return

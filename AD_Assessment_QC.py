@@ -16,6 +16,7 @@ from config.global_settings import import_config_dict
 from utils.QC_Predictor import get_predictor
 
 # Import config files
+
 config_dict = import_config_dict()
 
 # Import source folder path and detection model
@@ -209,7 +210,7 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
     return cno_col, avg_area_col, total_area_col, total_layer_area, total_layer_cno, total_layer_density, qc_pred, qc_conf
 
 
-def main(folder_dir, model, conf):
+def main(folder_dir, model = "YOLOv10-L", conf = 0.2):
     cno_model = YOLO(str(DETECTION_MODEL))
 
     # Search folder path
@@ -257,6 +258,7 @@ def main(folder_dir, model, conf):
         print("Save Path:", save_dir)
 
         try:
+
             os.makedirs(original_png_path, exist_ok=True)
             os.makedirs(enhanced_png_path, exist_ok=True)
             os.makedirs(kde_png_path, exist_ok=True)
@@ -381,5 +383,8 @@ def main(folder_dir, model, conf):
 
 
 if __name__ == "__main__":
+    DATA_PATH = sys.argv[1]
+    MODEL = sys.argv[2]
+    CONF = float(sys.argv[3])
     main(DATA_PATH, MODEL, CONF)
 

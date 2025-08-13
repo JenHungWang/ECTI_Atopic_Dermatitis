@@ -360,7 +360,7 @@ def cno_detect(folder_dir, model, conf):
     # Write CSV
     # open the file in the write mode
     f = open(save_dir + os.sep + '{}_{}_{}_{}_.csv'.format(folder, timestr, model, conf), 'w')
-    header = ['File', 'Country', 'Group', 'No.', 'TLSS', 'Lesional', 'CNO', 'QC', 'QC_Conf', 'Age', 'Age_Conf', 'UV', 'UV_Conf',
+    header = ['File', 'Country', 'Group', 'No.', 'TLSS', 'Lesional', 'CNO', 'ECTI', 'QC', 'QC_Conf', 'Age', 'Age_Conf', 'UV', 'UV_Conf',
 
               'Layer_Area_0', 'Layer_Area_1', 'Layer_Area_2', 'Layer_Area_3', 'Layer_Area_4',
               'Layer_Area_5', 'Layer_Area_6', 'Layer_Area_7', 'Layer_Area_8', 'Layer_Area_9',
@@ -388,7 +388,10 @@ def cno_detect(folder_dir, model, conf):
     writer.writerow(header)
 
     for i in range(len(file_list)):
-        data = [file_list[i], Country, AD_group, Number, TLSS, lesional, CNO_list[0][i], qc_prediction[i], qc_conf[i], age_prediction[i], age_conf[i], uv_prediction[i], uv_conf[i],
+        cno_kde = layer_cno[i][10] + layer_cno[i][11] + layer_cno[i][12] + layer_cno[i][13] + layer_cno[i][14]
+        area_kde = (layer_area[i][10] + layer_area[i][11] + layer_area[i][12] + layer_area[i][13] + layer_area[i][14]) * 20 * 20 / (512 * 512)
+        ecti = round(cno_kde / area_kde, 4) if area_kde > 0 else 0
+        data = [file_list[i], Country, AD_group, Number, TLSS, lesional, CNO_list[0][i], ecti, qc_prediction[i], qc_conf[i], age_prediction[i], age_conf[i], uv_prediction[i], uv_conf[i],
 
                 layer_area[i][0], layer_area[i][1], layer_area[i][2], layer_area[i][3], layer_area[i][4],
                 layer_area[i][5], layer_area[i][6], layer_area[i][7], layer_area[i][8], layer_area[i][9],

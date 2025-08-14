@@ -216,13 +216,14 @@ def main(folder_dir, model = "YOLOv10-L", conf = 0.2):
     # Search folder path
     folder_list = []
     for folderName in glob.glob(folder_dir + os.sep + '*'):
-        folder = folderName.split(os.sep)[-1]
-        folder_list.append(folder)
+        if os.path.isdir(folderName):
+            folder = folderName.split(os.sep)[-1]
+            folder_list.append(folder)
     folder_list.sort()
     print("Detected Folders", folder_list)
 
     for folder in folder_list:
-
+        folder = folder.replace('-','_') #added because sometimes ppl wrote - and it broke
         # Extract folder information
         folder_info = folder.split('_')
         if folder_info[2][0:2] == "TL":

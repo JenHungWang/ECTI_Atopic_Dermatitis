@@ -6,6 +6,9 @@ import math
 import glob
 import cv2
 import csv
+import matplotlib
+matplotlib.use('Agg')  # Set non-GUI backend first, otherwise sometimes get error when running over ssh
+
 import matplotlib.pyplot as plt
 from pathlib import Path
 from utils.Img_Preprocessing import *
@@ -216,7 +219,7 @@ def main(folder_dir, model = "YOLOv10-L", conf = 0.2):
     # Search folder path
     folder_list = []
     for folderName in glob.glob(folder_dir + os.sep + '*'):
-        if os.path.isdir(folderName):
+        if os.path.isdir(folderName): #now only searches in dir
             folder = folderName.split(os.sep)[-1]
             folder_list.append(folder)
     folder_list.sort()

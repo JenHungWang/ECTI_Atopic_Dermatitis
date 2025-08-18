@@ -16,6 +16,7 @@ def create_config_dict(config):
 
 def import_config_dict():
     """Import config dict"""
+    # TODO: Change to local path
     config = configparser.ConfigParser()
     config.read(r"C:\Users\MIDAS\Desktop\SCN_Analysis\config\path.ini")
     config_dict = create_config_dict(config)

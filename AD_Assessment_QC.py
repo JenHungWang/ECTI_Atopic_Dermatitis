@@ -7,6 +7,7 @@ import glob
 import cv2
 import csv
 import matplotlib
+import argparse
 matplotlib.use('Agg')  # Set non-GUI backend first, otherwise sometimes get error when running over ssh
 
 import matplotlib.pyplot as plt
@@ -387,8 +388,28 @@ def main(folder_dir, model = "YOLOv10-L", conf = 0.2):
 
 
 if __name__ == "__main__":
-    DATA_PATH = sys.argv[1]
-    MODEL = sys.argv[2]
-    CONF = float(sys.argv[3])
-    main(DATA_PATH, MODEL, CONF)
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description="CNO Detection Script")
+    parser.add_argument(
+        "--data_path",
+        type=str,
+        default=config_dict['PATH']['source'],
+        help="Path to the data directory (default: from config_dict)"
+    )
+    parser.add_argument(
+        "--model",
+        type=str,
+        default=config_dict['MODEL']['model'],
+        help="Model name for CNO detection (default: from config_dict)"
+    )
+    parser.add_argument(
+        "--conf",
+        type=float,
+        default=config_dict['MODEL']['conf_threshold'],
+        help="Confidence threshold for detection (default: from config_dict)"
+    )
+
+    args = parser.parse_args()
+
+    main(args.data_path, args.model, args.conf)
 

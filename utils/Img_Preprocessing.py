@@ -21,8 +21,10 @@ def load_im(fn):
     a = f.read()
     f.close()
     aa = str(a[:2048])
+
     xpix = int(re.findall('xpixels\s?=\s?([0-9]*)', aa)[0])
     ypix = int(re.findall('ypixels\s?=\s?([0-9]*)', aa)[0])
+
     a = a[2048:]
 
     words = [a[k * 2:k * 2 + 2] for k in range(xpix * ypix)]

@@ -6,6 +6,10 @@ import math
 import glob
 import cv2
 import csv
+import matplotlib
+import argparse
+matplotlib.use('Agg')  # Set non-GUI backend first, otherwise sometimes get error when running over ssh
+
 import matplotlib.pyplot as plt
 from pathlib import Path
 from utils.Img_Preprocessing import *
@@ -16,6 +20,7 @@ from config.global_settings import import_config_dict
 from utils.QC_Predictor import get_predictor
 
 # Import config files
+
 config_dict = import_config_dict()
 
 # Import source folder path and detection model
@@ -209,19 +214,20 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
     return cno_col, avg_area_col, total_area_col, total_layer_area, total_layer_cno, total_layer_density, qc_pred, qc_conf
 
 
-def main(folder_dir, model, conf):
+def main(folder_dir, model = "YOLOv10-L", conf = 0.2):
     cno_model = YOLO(str(DETECTION_MODEL))
 
     # Search folder path
     folder_list = []
     for folderName in glob.glob(folder_dir + os.sep + '*'):
-        folder = folderName.split(os.sep)[-1]
-        folder_list.append(folder)
+        if os.path.isdir(folderName): #now only searches in dir
+            folder = folderName.split(os.sep)[-1]
+            folder_list.append(folder)
     folder_list.sort()
     print("Detected Folders", folder_list)
 
     for folder in folder_list:
-
+        folder = folder.replace('-','_') #added because sometimes ppl wrote - and it broke
         # Extract folder information
         folder_info = folder.split('_')
         if folder_info[2][0:2] == "TL":
@@ -257,6 +263,7 @@ def main(folder_dir, model, conf):
         print("Save Path:", save_dir)
 
         try:
+
             os.makedirs(original_png_path, exist_ok=True)
             os.makedirs(enhanced_png_path, exist_ok=True)
             os.makedirs(kde_png_path, exist_ok=True)
@@ -381,5 +388,28 @@ def main(folder_dir, model, conf):
 
 
 if __name__ == "__main__":
-    main(DATA_PATH, MODEL, CONF)
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description="CNO Detection Script")
+    parser.add_argument(
+        "--data_path",
+        type=str,
+        default=config_dict['PATH']['source'],
+        help="Path to the data directory (default: from config_dict)"
+    )
+    parser.add_argument(
+        "--model",
+        type=str,
+        default=config_dict['MODEL']['model'],
+        help="Model name for CNO detection (default: from config_dict)"
+    )
+    parser.add_argument(
+        "--conf",
+        type=float,
+        default=config_dict['MODEL']['conf_threshold'],
+        help="Confidence threshold for detection (default: from config_dict)"
+    )
+
+    args = parser.parse_args()
+
+    main(args.data_path, args.model, args.conf)
 

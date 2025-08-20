@@ -16,6 +16,7 @@ def create_config_dict(config):
 
 def import_config_dict():
     """Import config dict"""
+    # TODO: Change to local path
     config = configparser.ConfigParser()
     config.read('config/path.ini')
     config_dict = create_config_dict(config)

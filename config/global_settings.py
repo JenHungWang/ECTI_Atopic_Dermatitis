@@ -18,13 +18,13 @@ def import_config_dict():
     """Import config dict"""
     # TODO: Change to local path
     config = configparser.ConfigParser()
-    config.read(r"C:\Users\MIDAS\Desktop\SCN_Analysis\config\path.ini")
+    config.read('config/path.ini')
     config_dict = create_config_dict(config)
 
-    config.read(r"C:\Users\MIDAS\Desktop\SCN_Analysis\config\model.ini")
+    config.read('config/model.ini')
     config_dict.update(create_config_dict(config))
 
-    config.read(r"C:\Users\MIDAS\Desktop\SCN_Analysis\config\qc.ini")
+    config.read('config/qc.ini')
     config_dict.update(create_config_dict(config))
 
     config_dict['MODEL']['conf_threshold'] = \

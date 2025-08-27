@@ -305,18 +305,28 @@ def main(folder_dir, model = "YOLOv10-L", conf = 0.2):
                 print(i, end=' ')
         else:
             for i, fn in enumerate(encyc):
-                file_type = "bcr" if fn.lower().endswith(('.bcr')) else "nid"
-                base = os.path.split(fn)[1][0:-10]
+                file_type = "bcr" if fn.lower().endswith('.bcr') else "nid"
+                base_name = os.path.splitext(os.path.basename(fn))[0][0:-6]  # Remove _trace/_nid suffix
+
                 if file_type == 'nid':
-                    # For .nid, add names based on direction
-                    if "_OB" in fn:
-                        file_list.append(f"{base}_backward")
-                    elif "_OF" in fn:
-                        file_list.append(f"{base}_forward")
+                    # Check for forward/backward images
+                    forward_img = os.path.join(enhanced_png_path, f"{base_name}_forward.png")
+                    backward_img = os.path.join(enhanced_png_path, f"{base_name}_backward.png")
+
+                    # If either image is missing, preprocess
+                    if not (os.path.exists(forward_img) and os.path.exists(backward_img)):
+                        file = treat_one_image(fn, original_png_path, enhanced_png_path, file_type)
+                        file_list.extend(file)
                     else:
-                        file_list.extend([f"{base}_backward", f"{base}_forward"])
-                else:
-                    file_list.append(base)
+                        file_list.extend([f"{base_name}_forward", f"{base_name}_backward"])
+
+                else:  # BCR
+                    image_path = os.path.join(enhanced_png_path, f"{base_name}.png")
+                    if not os.path.exists(image_path):
+                        file = treat_one_image(fn, original_png_path, enhanced_png_path, file_type)
+                        file_list.append(file)
+                    else:
+                        file_list.append(base_name)
 
         print("Model", model)
         print("Conf", conf)
@@ -327,6 +337,16 @@ def main(folder_dir, model = "YOLOv10-L", conf = 0.2):
         cno_list.append(cno_col)
         area_sum.append(total_area_col)
         area_avg.append(avg_area_col)
+
+        # Clear the save folder if we already have a dir
+        if not run_preprocessing:
+            print("Will clean results folder")
+            for filename in os.listdir(save_dir):
+                file_path = os.path.join(save_dir, filename)
+                try:
+                    os.remove(file_path)
+                except Exception as e:
+                    print(f"Failed to delete {file_path}. Reason: {e}")
 
         # Write CSV
         # open the file in the write mode

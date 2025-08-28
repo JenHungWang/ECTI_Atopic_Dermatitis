@@ -4,7 +4,7 @@ import time
 import sys
 import math
 import glob
-import cv2
+from cv2 import rectangle, imwrite #improves loadtime by 1/3
 import csv
 import matplotlib
 import argparse
@@ -96,7 +96,7 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
                 y2 = round(result.boxes.xyxy[j][3].item())
 
                 cno_coor[j] = [x, y]
-                bbox_img = cv2.rectangle(bbox_img,
+                bbox_img = rectangle(bbox_img,
                                          (x1, y1),
                                          (x2, y2),
                                          (0, 255, 0), 1)
@@ -106,7 +106,7 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
             total_area_col.append(round(total_area.item(), 4))
 
             # Save bounding box image
-            cv2.imwrite(os.path.join(kde_dir, '{}_{}_{}_bbox.png'.format(file_list[idx], model_type, conf)),
+            imwrite(os.path.join(kde_dir, '{}_{}_{}_bbox.png'.format(file_list[idx], model_type, conf)),
                         bbox_img)
 
             kde = KernelDensity(metric='euclidean', kernel='gaussian', algorithm='ball_tree')
@@ -227,7 +227,12 @@ def main(folder_dir, model = "YOLOv10-L", conf = 0.2):
     print("Detected Folders", folder_list)
 
     for folder in folder_list:
-        folder = folder.replace('-','_') #added because sometimes ppl wrote - and it broke
+        if '-' in folder:
+            new_name = folder.replace('-', '_')
+            os.rename(folder_dir + "\\" + folder, folder_dir + "\\" + new_name)
+            print(f"Renamed: {folder} to {new_name}")
+            folder = new_name #added because sometimes ppl wrote - and it broke
+
         # Extract folder information
         folder_info = folder.split('_')
         if folder_info[2][0:2] == "TL":

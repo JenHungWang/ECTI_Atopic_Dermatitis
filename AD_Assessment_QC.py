@@ -313,17 +313,19 @@ def main(folder_dir, model = "YOLOv10-L", conf = 0.2):
         else:
             for i, fn in enumerate(encyc):
                 file_type = "bcr" if fn.lower().endswith('.bcr') else "nid"
-                base_name = os.path.splitext(os.path.basename(fn))[0][0:-6]  # Remove _trace/_nid suffix
-                if file_type == 'nid':
 
+                if file_type == 'nid':
+                    base_name = os.path.splitext(os.path.basename(fn))[0]  # Remove _trace/_nid suffix
                     # Check for forward/backward images
                     forward_img = os.path.join(enhanced_png_path, f"{base_name}_forward.png")
                     backward_img = os.path.join(enhanced_png_path, f"{base_name}_backward.png")
-
                     # If either image is missing, preprocess
                     if not (os.path.exists(forward_img) and os.path.exists(backward_img)):
-                        file = treat_one_image(fn, original_png_path, enhanced_png_path, file_type)
+                        files_double = treat_one_image(fn, original_png_path, enhanced_png_path, file_type)
                         print("Made enhanced version of: " , base_name)
+                        file_list.append(files_double[0])
+                        file_list.append(files_double[1])
+
                     else:
                         print("Enhanced version of: ", base_name, " should already exist")
                          #file_list.extend([f"{base_name}_forward", f"{base_name}_backward"])
@@ -331,6 +333,7 @@ def main(folder_dir, model = "YOLOv10-L", conf = 0.2):
                     #Will now not run if file has already had KDE and CNO
 
                 else:  # BCR
+                    base_name = os.path.splitext(os.path.basename(fn))[0][0:-6]  # Remove _trace
                     final_filename = os.path.join(enhanced_png_path, os.path.split(fn)[1][0:-4] + ".png")
                     if not os.path.exists(final_filename):
                         file = treat_one_image(fn, original_png_path, enhanced_png_path, file_type)
@@ -346,7 +349,7 @@ def main(folder_dir, model = "YOLOv10-L", conf = 0.2):
         print("Model", model)
         print("Conf", conf)
 
-
+        print(file_list)
         if len(file_list) != 0: #Only run if there are new files
 
             # CNO detection & KDE calculation

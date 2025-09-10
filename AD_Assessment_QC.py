@@ -4,7 +4,7 @@ import time
 import sys
 import math
 import glob
-import cv2
+from cv2 import rectangle, imwrite #improves loadtime by 1/3
 import csv
 import matplotlib
 import argparse
@@ -62,8 +62,9 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
     qc_pred = []
     qc_conf = []
 
-    detection_results = cno_model.predict(source, save=False, save_txt=False, iou=0.5, conf=conf, max_det=1200)
+    image_paths = [os.path.join(source, f + ".png") for f in file_list]
 
+    detection_results = cno_model.predict(image_paths, save=False, save_txt=False, iou=0.5, conf=conf, max_det=1200)
     # CNO detection
     for idx, result in enumerate(detection_results):
         cno = len(result.boxes)
@@ -96,7 +97,7 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
                 y2 = round(result.boxes.xyxy[j][3].item())
 
                 cno_coor[j] = [x, y]
-                bbox_img = cv2.rectangle(bbox_img,
+                bbox_img = rectangle(bbox_img,
                                          (x1, y1),
                                          (x2, y2),
                                          (0, 255, 0), 1)
@@ -106,7 +107,7 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
             total_area_col.append(round(total_area.item(), 4))
 
             # Save bounding box image
-            cv2.imwrite(os.path.join(kde_dir, '{}_{}_{}_bbox.png'.format(file_list[idx], model_type, conf)),
+            imwrite(os.path.join(kde_dir, '{}_{}_{}_bbox.png'.format(file_list[idx], model_type, conf)),
                         bbox_img)
 
             kde = KernelDensity(metric='euclidean', kernel='gaussian', algorithm='ball_tree')
@@ -227,7 +228,12 @@ def main(folder_dir, model = "YOLOv10-L", conf = 0.2):
     print("Detected Folders", folder_list)
 
     for folder in folder_list:
-        folder = folder.replace('-','_') #added because sometimes ppl wrote - and it broke
+        if '-' in folder:
+            new_name = folder.replace('-', '_')
+            os.rename(folder_dir + "\\" + folder, folder_dir + "\\" + new_name)
+            print(f"Renamed: {folder} to {new_name}")
+            folder = new_name #added because sometimes ppl wrote - and it broke
+
         # Extract folder information
         folder_info = folder.split('_')
         if folder_info[2][0:2] == "TL":
@@ -296,6 +302,7 @@ def main(folder_dir, model = "YOLOv10-L", conf = 0.2):
         # Image preprocessing
         if run_preprocessing:
             for i, fn in enumerate(encyc):
+
                 file_type = "bcr" if fn.lower().endswith(('.bcr')) else "nid"
                 file = treat_one_image(fn, original_png_path, enhanced_png_path, file_type)
                 if file_type == 'nid':
@@ -305,86 +312,126 @@ def main(folder_dir, model = "YOLOv10-L", conf = 0.2):
                 print(i, end=' ')
         else:
             for i, fn in enumerate(encyc):
-                file_type = "bcr" if fn.lower().endswith(('.bcr')) else "nid"
-                base = os.path.split(fn)[1][0:-10]
+                file_type = "bcr" if fn.lower().endswith('.bcr') else "nid"
+
                 if file_type == 'nid':
-                    # For .nid, add names based on direction
-                    if "_OB" in fn:
-                        file_list.append(f"{base}_backward")
-                    elif "_OF" in fn:
-                        file_list.append(f"{base}_forward")
+                    base_name = os.path.splitext(os.path.basename(fn))[0]  # Remove _trace/_nid suffix
+                    # Check for forward/backward images
+                    forward_img = os.path.join(enhanced_png_path, f"{base_name}_forward.png")
+                    backward_img = os.path.join(enhanced_png_path, f"{base_name}_backward.png")
+                    # If either image is missing, preprocess
+                    if not (os.path.exists(forward_img) and os.path.exists(backward_img)):
+                        files_double = treat_one_image(fn, original_png_path, enhanced_png_path, file_type)
+                        print("Made enhanced version of: " , base_name)
+                        file_list.append(files_double[0])
+                        file_list.append(files_double[1])
+
                     else:
-                        file_list.extend([f"{base}_backward", f"{base}_forward"])
-                else:
-                    file_list.append(base)
+                        print("Enhanced version of: ", base_name, " should already exist")
+                         #file_list.extend([f"{base_name}_forward", f"{base_name}_backward"])
+
+                    #Will now not run if file has already had KDE and CNO
+
+                else:  # BCR
+                    base_name = os.path.splitext(os.path.basename(fn))[0][0:-6]  # Remove _trace
+                    final_filename = os.path.join(enhanced_png_path, os.path.split(fn)[1][0:-4] + ".png")
+                    if not os.path.exists(final_filename):
+                        file = treat_one_image(fn, original_png_path, enhanced_png_path, file_type)
+                        print("Made enhanced version of: ", base_name)
+                        file_list.append(file)
+                    else:
+                        print("Enhanced version of: ", base_name, " should already exist")
+
+                        #file_list.append(base_name)
+                    #Will now not run if file has already had KDE and CNO
+
 
         print("Model", model)
         print("Conf", conf)
 
-        # CNO detection & KDE calculation
-        cno_col, avg_area_col, total_area_col, layer_area, layer_cno, layer_density, qc_prediction, qc_conf = cno_detection(enhanced_png_path, kde_png_path, conf, cno_model,
-                                                                                                                   file_list, model)
-        cno_list.append(cno_col)
-        area_sum.append(total_area_col)
-        area_avg.append(avg_area_col)
+        print(file_list)
+        if len(file_list) != 0: #Only run if there are new files
 
-        # Write CSV
-        # open the file in the write mode
-        f = open(save_dir + os.sep + '{}_{}.csv'.format(folder, timestr), 'w')
-        header = ['File', 'Country', 'Group', 'No.', 'TLSS', 'Lesional', 'CNO', 'QC', 'QC_Conf',
+            # CNO detection & KDE calculation
+            cno_col, avg_area_col, total_area_col, layer_area, layer_cno, layer_density, qc_prediction, qc_conf = cno_detection(enhanced_png_path, kde_png_path, conf, cno_model,
+                                                                                                                       file_list, model)
+            cno_list.append(cno_col)
+            area_sum.append(total_area_col)
+            area_avg.append(avg_area_col)
 
-                  'Layer_Area_0', 'Layer_Area_1', 'Layer_Area_2', 'Layer_Area_3', 'Layer_Area_4',
-                  'Layer_Area_5', 'Layer_Area_6', 'Layer_Area_7', 'Layer_Area_8', 'Layer_Area_9',
-                  'Layer_Area_10', 'Layer_Area_11', 'Layer_Area_12', 'Layer_Area_13', 'Layer_Area_14',
-                  'Layer_Area_15', 'Layer_Area_16', 'Layer_Area_17', 'Layer_Area_18', 'Layer_Area_19',
-                  'Layer_Area_20', 'Layer_Area_21', 'Layer_Area_22', 'Layer_Area_23', 'Layer_Area_24',
+            # append to csv if we already have a dir
 
-                  'Layer_CNO_0', 'Layer_CNO_1', 'Layer_CNO_2', 'Layer_CNO_3', 'Layer_CNO_4',
-                  'Layer_CNO_5', 'Layer_CNO_6', 'Layer_CNO_7', 'Layer_CNO_8', 'Layer_CNO_9',
-                  'Layer_CNO_10', 'Layer_CNO_11', 'Layer_CNO_12', 'Layer_CNO_13', 'Layer_CNO_14',
-                  'Layer_CNO_15', 'Layer_CNO_16', 'Layer_CNO_17', 'Layer_CNO_18', 'Layer_CNO_19',
-                  'Layer_CNO_20', 'Layer_CNO_21', 'Layer_CNO_22', 'Layer_CNO_23', 'Layer_CNO_24',
+            if not run_preprocessing:
+                # Find the first CSV file in the folder
+                csv_files = sorted(glob.glob(os.path.join(save_dir, "*.csv")))
+                if not csv_files:
+                    raise FileNotFoundError("No CSV files found in folder to append to.")
+                csv_path = csv_files[0]
 
-                  'Layer_Density_0', 'Layer_Density_1', 'Layer_Density_2', 'Layer_Density_3',
-                  'Layer_Density_4', 'Layer_Density_5', 'Layer_Density_6', 'Layer_Density_7',
-                  'Layer_Density_8', 'Layer_Density_9', 'Layer_Density_10', 'Layer_Density_11',
-                  'Layer_Density_12', 'Layer_Density_13', 'Layer_Density_14', 'Layer_Density_15',
-                  'Layer_Density_16', 'Layer_Density_17', 'Layer_Density_18', 'Layer_Density_19',
-                  'Layer_Density_20', 'Layer_Density_21', 'Layer_Density_22', 'Layer_Density_23',
-                  'Layer_Density_24',
+                # Open in append mode, don't write header
+                f = open(csv_path, 'a', newline='')
+                writer = csv.writer(f)
+            else:
+                # Write CSV
+                # open the file in the write mode
+                f = open(save_dir + os.sep + '{}_{}.csv'.format(folder, timestr), 'w')
+                header = ['File', 'Country', 'Group', 'No.', 'TLSS', 'Lesional', 'CNO', 'QC', 'QC_Conf',
 
-                  'AVG_Area', 'AVG_Size']
+                          'Layer_Area_0', 'Layer_Area_1', 'Layer_Area_2', 'Layer_Area_3', 'Layer_Area_4',
+                          'Layer_Area_5', 'Layer_Area_6', 'Layer_Area_7', 'Layer_Area_8', 'Layer_Area_9',
+                          'Layer_Area_10', 'Layer_Area_11', 'Layer_Area_12', 'Layer_Area_13', 'Layer_Area_14',
+                          'Layer_Area_15', 'Layer_Area_16', 'Layer_Area_17', 'Layer_Area_18', 'Layer_Area_19',
+                          'Layer_Area_20', 'Layer_Area_21', 'Layer_Area_22', 'Layer_Area_23', 'Layer_Area_24',
 
-        writer = csv.writer(f)
-        writer.writerow(header)
+                          'Layer_CNO_0', 'Layer_CNO_1', 'Layer_CNO_2', 'Layer_CNO_3', 'Layer_CNO_4',
+                          'Layer_CNO_5', 'Layer_CNO_6', 'Layer_CNO_7', 'Layer_CNO_8', 'Layer_CNO_9',
+                          'Layer_CNO_10', 'Layer_CNO_11', 'Layer_CNO_12', 'Layer_CNO_13', 'Layer_CNO_14',
+                          'Layer_CNO_15', 'Layer_CNO_16', 'Layer_CNO_17', 'Layer_CNO_18', 'Layer_CNO_19',
+                          'Layer_CNO_20', 'Layer_CNO_21', 'Layer_CNO_22', 'Layer_CNO_23', 'Layer_CNO_24',
 
-        for i in range(len(file_list)):
-            data = [file_list[i], country, ad_group, number, tlss, lesional, cno_list[0][i], qc_prediction[i], qc_conf[i],
+                          'Layer_Density_0', 'Layer_Density_1', 'Layer_Density_2', 'Layer_Density_3',
+                          'Layer_Density_4', 'Layer_Density_5', 'Layer_Density_6', 'Layer_Density_7',
+                          'Layer_Density_8', 'Layer_Density_9', 'Layer_Density_10', 'Layer_Density_11',
+                          'Layer_Density_12', 'Layer_Density_13', 'Layer_Density_14', 'Layer_Density_15',
+                          'Layer_Density_16', 'Layer_Density_17', 'Layer_Density_18', 'Layer_Density_19',
+                          'Layer_Density_20', 'Layer_Density_21', 'Layer_Density_22', 'Layer_Density_23',
+                          'Layer_Density_24',
 
-                    layer_area[i][0], layer_area[i][1], layer_area[i][2], layer_area[i][3], layer_area[i][4],
-                    layer_area[i][5], layer_area[i][6], layer_area[i][7], layer_area[i][8], layer_area[i][9],
-                    layer_area[i][10], layer_area[i][11], layer_area[i][12], layer_area[i][13],
-                    layer_area[i][14], layer_area[i][15], layer_area[i][16], layer_area[i][17],
-                    layer_area[i][18], layer_area[i][19], layer_area[i][20], layer_area[i][21],
-                    layer_area[i][22], layer_area[i][23], layer_area[i][24],
+                          'AVG_Area', 'AVG_Size']
 
-                    layer_cno[i][0], layer_cno[i][1], layer_cno[i][2], layer_cno[i][3], layer_cno[i][4],
-                    layer_cno[i][5], layer_cno[i][6], layer_cno[i][7], layer_cno[i][8], layer_cno[i][9],
-                    layer_cno[i][10], layer_cno[i][11], layer_cno[i][12], layer_cno[i][13], layer_cno[i][14],
-                    layer_cno[i][15], layer_cno[i][16], layer_cno[i][17], layer_cno[i][18], layer_cno[i][19],
-                    layer_cno[i][20], layer_cno[i][21], layer_cno[i][22], layer_cno[i][23], layer_cno[i][24],
+                writer = csv.writer(f)
+                writer.writerow(header)
 
-                    layer_density[i][0], layer_density[i][1], layer_density[i][2], layer_density[i][3],
-                    layer_density[i][4], layer_density[i][5], layer_density[i][6], layer_density[i][7],
-                    layer_density[i][8], layer_density[i][9], layer_density[i][10], layer_density[i][11],
-                    layer_density[i][12], layer_density[i][13], layer_density[i][14], layer_density[i][15],
-                    layer_density[i][16], layer_density[i][17], layer_density[i][18], layer_density[i][19],
-                    layer_density[i][20], layer_density[i][21], layer_density[i][22], layer_density[i][23],
-                    layer_density[i][24],
+            for i in range(len(file_list)):
+                data = [file_list[i], country, ad_group, number, tlss, lesional, cno_list[0][i], qc_prediction[i], qc_conf[i],
 
-                    area_sum[0][i], area_avg[0][i]]
-            writer.writerow(data)
-        f.close()
+                        layer_area[i][0], layer_area[i][1], layer_area[i][2], layer_area[i][3], layer_area[i][4],
+                        layer_area[i][5], layer_area[i][6], layer_area[i][7], layer_area[i][8], layer_area[i][9],
+                        layer_area[i][10], layer_area[i][11], layer_area[i][12], layer_area[i][13],
+                        layer_area[i][14], layer_area[i][15], layer_area[i][16], layer_area[i][17],
+                        layer_area[i][18], layer_area[i][19], layer_area[i][20], layer_area[i][21],
+                        layer_area[i][22], layer_area[i][23], layer_area[i][24],
+
+                        layer_cno[i][0], layer_cno[i][1], layer_cno[i][2], layer_cno[i][3], layer_cno[i][4],
+                        layer_cno[i][5], layer_cno[i][6], layer_cno[i][7], layer_cno[i][8], layer_cno[i][9],
+                        layer_cno[i][10], layer_cno[i][11], layer_cno[i][12], layer_cno[i][13], layer_cno[i][14],
+                        layer_cno[i][15], layer_cno[i][16], layer_cno[i][17], layer_cno[i][18], layer_cno[i][19],
+                        layer_cno[i][20], layer_cno[i][21], layer_cno[i][22], layer_cno[i][23], layer_cno[i][24],
+
+                        layer_density[i][0], layer_density[i][1], layer_density[i][2], layer_density[i][3],
+                        layer_density[i][4], layer_density[i][5], layer_density[i][6], layer_density[i][7],
+                        layer_density[i][8], layer_density[i][9], layer_density[i][10], layer_density[i][11],
+                        layer_density[i][12], layer_density[i][13], layer_density[i][14], layer_density[i][15],
+                        layer_density[i][16], layer_density[i][17], layer_density[i][18], layer_density[i][19],
+                        layer_density[i][20], layer_density[i][21], layer_density[i][22], layer_density[i][23],
+                        layer_density[i][24],
+
+                        area_sum[0][i], area_avg[0][i]]
+                writer.writerow(data)
+            f.close()
+
+        else:
+            print("No new pictures in main folder. Will not write CSV")
 
 
 if __name__ == "__main__":

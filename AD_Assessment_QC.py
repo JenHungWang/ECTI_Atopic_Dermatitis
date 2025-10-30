@@ -194,15 +194,16 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
     predictor = get_predictor(QC_PREDICTOR, model_name='RETFound_mae', num_classes=2, input_size=224)
 
     # Get all PNG files in the folder
-    png_files = [f for f in Path(source).glob("*.png")]
-
-    if not png_files:
+    # png_files = [f for f in Path(source).glob("*.png")] #TODO Here is the culprit. We "glob" instead of using only file list
+    # TODO From here and under "png_files" have been swapped for "image_paths" which is based in function input
+    if not image_paths:
         print(f"No PNG files found in {source}")
         return
 
     # Process each image
-    for image_path in png_files:
-        print(f"\nQC Processing: {image_path.name}")
+    for file in file_list:
+        image_path = os.path.join(source, file + ".png")
+        print(f"\nQC Processing: {file}")
         result = predictor.predict(image_path)
 
         print(f"Predicted class: {result['predicted_class']}")
@@ -369,7 +370,7 @@ def main(folder_dir, model = "YOLOv10-L", conf = 0.2):
                 csv_path = csv_files[0]
 
                 # Open in append mode, don't write header
-                f = open(csv_path, 'a', newline='')
+                f = open(csv_path, 'a') # TODO removed newline='' to match original format, what you prefer?
                 writer = csv.writer(f)
             else:
                 # Write CSV
@@ -401,7 +402,6 @@ def main(folder_dir, model = "YOLOv10-L", conf = 0.2):
 
                 writer = csv.writer(f)
                 writer.writerow(header)
-
             for i in range(len(file_list)):
                 data = [file_list[i], country, ad_group, number, tlss, lesional, cno_list[0][i], qc_prediction[i], qc_conf[i],
 

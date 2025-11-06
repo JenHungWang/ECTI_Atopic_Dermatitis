@@ -131,7 +131,9 @@ def process_nid_file(fn, original_png_path, enhanced_png_path, direction="both")
         return None
 
 
-# Process a single image file, enhance its contrast, and saßve the original and enhanced images
+
+
+# Process a single image file, enhance its contrast, and save the original and enhanced images
 def treat_one_image(fn, original_png_path, enhanced_png_path, file_type):
     # Load image
     if file_type == "nid":

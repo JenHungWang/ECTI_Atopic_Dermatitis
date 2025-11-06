@@ -22,8 +22,7 @@ QC_MODEL_PATH = config_dict['QC']['folder_path']
 DIR_NAME = Path(os.path.dirname(__file__))
 
 log_file = "qc_error_log.txt"  # You can also use an absolute path if you prefer
-folder_dir = "C:/Users/MIDAS/Desktop/QC_Experiments/25_Baby_B9"
-cutoff_date = datetime(2025, 8, 27)
+main_folder_dir = "C:/Users/MIDAS/Desktop/QC_Experiments/" #This should end in "/"
 model = "YOLOv10-L"
 conf = 0.2
 DETECTION_MODEL = os.path.join(MODEL_PATH, MODEL)
@@ -64,7 +63,7 @@ def RewriteCSV(folder):
     #Redo QC model predictions
     cno_col, avg_area_col, total_area_col, layer_area, layer_cno, layer_density, qc_prediction, qc_conf = cno_detection(
     enhanced_png_path, kde_png_path, conf, cno_model,
-    file_list, model)
+    file_list, model, save_figs=False)
 
 
 
@@ -128,41 +127,47 @@ def RewriteCSV(folder):
         writer.writerow(data)
     f.close()
 
-
-
-folder_list = []
-for folderName in glob.glob(folder_dir + os.sep + '*'):
+major_folder_list = []
+for folderName in glob.glob(main_folder_dir + os.sep + '*'):
     if os.path.isdir(folderName):  # now only searches in dir
         folder = folderName.split(os.sep)[-1]
-        folder_list.append(folder)
-folder_list.sort()
-print("Detected Folders", folder_list)
+        major_folder_list.append(folder)
+major_folder_list.sort()
+print("Detected Main Folders", major_folder_list)
 
-for folder in folder_list:
-    resultFolder = folder + "/CNO_Detection/Result"
-    csv_files = sorted(glob.glob(os.path.join(folder_dir,resultFolder, "*.csv")))
+for major_folder_name in major_folder_list:
 
-    if not csv_files:
-        print("No CSV files found in folder to append to.")
-        print("Running QC code")
-        try:
-            RewriteCSV(folder)
-        except Exception as e:
-            print("Could not do QC for this folder ", folder)
-            print("Error was ", e)
-            print("Will write this to log")
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    folder_list = []
+    folder_dir = main_folder_dir + major_folder_name
+    for folderName in glob.glob(folder_dir + os.sep + '*'):
+        if os.path.isdir(folderName):  # now only searches in dir
+            folder = folderName.split(os.sep)[-1]
+            folder_list.append(folder)
+    folder_list.sort()
+    print("Detected Folders", folder_list)
 
-            # Append error info to log file
-            with open(log_file, "a", encoding="utf-8") as f:
-                f.write(f"[{timestamp}] Folder: {folder}\n")
-                f.write(f"Error: {e}\n")
-                f.write("-" * 60 + "\n")
-    else:
-        csv_path = csv_files[0]
-        mod_time = datetime.fromtimestamp(os.path.getmtime(csv_path))
-        if mod_time > cutoff_date:
-            #if file(csv_path) is newer than August 27, 2025:
+    for folder in folder_list:
+        resultFolder = folder + "/CNO_Detection/Result"
+        csv_files = sorted(glob.glob(os.path.join(folder_dir,resultFolder, "*.csv")))
+
+        if not csv_files:
+            print("No CSV files found in folder to append to.")
+            print("Running QC code")
+            try:
+                RewriteCSV(folder)
+            except Exception as e:
+                print("Could not do QC for this folder ", folder)
+                print("Error was ", e)
+                print("Will write this to log")
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                # Append error info to log file
+                with open(log_file, "a", encoding="utf-8") as f:
+                    f.write(f"[{timestamp}] Folder: {folder}\n")
+                    f.write(f"Error: {e}\n")
+                    f.write("-" * 60 + "\n")
+        else:
+            csv_path = csv_files[0]
             print("Now deleting CSV file at " ,csv_path)
             os.remove(csv_path)
             print("Writing new CSV file based on new QC calculations for ", folder)
@@ -179,7 +184,4 @@ for folder in folder_list:
                     f.write(f"[{timestamp}] Folder: {folder}\n")
                     f.write(f"Error: {e}\n")
                     f.write("-" * 60 + "\n")
-
-        else:
-            print("CSV file too old to be affected by bug in ", folder)
 

@@ -51,7 +51,7 @@ def numcat(arr):
 
 
 # Perform CNO (Circular Nano-size Object) detection and density analysis using KDE
-def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
+def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type, save_figs = True):
     # Declare parameters
     cno_col = []
     total_layer_area = []
@@ -105,12 +105,12 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
             avg_area = total_area / cno  # Calculate average area
             avg_area_col.append(round(avg_area.item(), 4))
             total_area_col.append(round(total_area.item(), 4))
+            if save_figs:
+                # Save bounding box image
+                imwrite(os.path.join(kde_dir, '{}_{}_{}_bbox.png'.format(file_list[idx], model_type, conf)),
+                            bbox_img)
 
-            # Save bounding box image
-            imwrite(os.path.join(kde_dir, '{}_{}_{}_bbox.png'.format(file_list[idx], model_type, conf)),
-                        bbox_img)
-
-            kde = KernelDensity(metric='euclidean', kernel='gaussian', algorithm='ball_tree')
+            kde = KernelDensity(metric='euclidean', kernel='gaussian', algorithm='ball_tree',)
 
             # Finding optimal bandwidth
             ti = time.time()
@@ -118,7 +118,7 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
                 fold = cno
             else:
                 fold = 7
-            gs = GridSearchCV(kde, {'bandwidth': np.linspace(20, 60, 41)}, cv=fold)
+            gs = GridSearchCV(kde, {'bandwidth': np.linspace(20, 60, 41)}, cv=fold,n_jobs=2)
             cv = gs.fit(cno_coor)
             bw = cv.best_params_['bandwidth']
             tf = time.time()
@@ -171,23 +171,24 @@ def cno_detection(source, kde_dir, conf, cno_model, file_list, model_type):
             total_layer_area.append(single_layer_area)
             total_layer_cno.append(single_layer_cno)
             total_layer_density.append(single_layer_density)
+            if save_figs:
+                # Plot CNO distribution
+                plt.contourf(x, y, z, levels=levels, cmap=plt.cm.bone)
+                plt.axis('off')
+                plt.gcf().set_size_inches(8, 8)
+                plt.gca().invert_yaxis()
+                plt.savefig(os.path.join(kde_dir, '{}_{}_{}_KDE.png'.format(file_list[idx], model_type, conf)),
+                            bbox_inches='tight', pad_inches=0)
+                plt.clf()
 
-            # Plot CNO distribution
-            plt.contourf(x, y, z, levels=levels, cmap=plt.cm.bone)
-            plt.axis('off')
-            plt.gcf().set_size_inches(8, 8)
-            plt.gca().invert_yaxis()
-            plt.savefig(os.path.join(kde_dir, '{}_{}_{}_KDE.png'.format(file_list[idx], model_type, conf)),
-                        bbox_inches='tight', pad_inches=0)
-            plt.clf()
+                plt.scatter(cno_coor[:, 0], cno_coor[:, 1], s=10)
+                plt.axis('off')
+                plt.gcf().set_size_inches(8, 8)
+                plt.gca().invert_yaxis()
+                plt.savefig(os.path.join(kde_dir, '{}_{}_{}_Spatial.png'.format(file_list[idx], model_type, conf)),
+                            bbox_inches='tight', pad_inches=0)
+                plt.clf()
 
-            plt.scatter(cno_coor[:, 0], cno_coor[:, 1], s=10)
-            plt.axis('off')
-            plt.gcf().set_size_inches(8, 8)
-            plt.gca().invert_yaxis()
-            plt.savefig(os.path.join(kde_dir, '{}_{}_{}_Spatial.png'.format(file_list[idx], model_type, conf)),
-                        bbox_inches='tight', pad_inches=0)
-            plt.clf()
         cno_col.append(cno)
 
     # Create predictor instance
